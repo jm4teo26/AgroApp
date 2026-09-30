@@ -1,43 +1,25 @@
 /* ========================================
    AgroApp — Service Worker
    Permite funcionar sin internet (offline)
+   Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v1';
-const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/css/variables.css',
-    '/css/base.css',
-    '/css/components.css',
-    '/css/layout.css',
-    '/css/dashboard.css',
-    '/css/parcelas.css',
-    '/css/clima.css',
-    '/css/calendario.css',
-    '/css/bitacora.css',
-    '/css/sugerencias.css',
-    '/css/modals.css',
-    '/js/data.js',
-    '/js/utils.js',
-    '/js/weather.js',
-    '/js/suggestions.js',
-    '/js/maps.js',
-    '/js/parcelas.js',
-    '/js/calendario.js',
-    '/js/bitacora.js',
-    '/js/dashboard.js',
-    '/js/app.js',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png'
-];
+const CACHE_NAME = 'agroapp-v2';
 
-// Instalar: cachear todos los archivos
+// Detectar la base path automáticamente
+const BASE_PATH = self.registration.scope;
+
+// Instalar: cachear página principal
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(ASSETS))
+            .then(cache => {
+                // Cachear la página principal usando ruta relativa
+                return cache.addAll([
+                    BASE_PATH,
+                    BASE_PATH + 'index.html'
+                ]);
+            })
             .then(() => self.skipWaiting())
     );
 });
@@ -54,31 +36,30 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch: servir desde cache primero, luego red
+// Fetch: network first para todo, con fallback a cache
 self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    // Para la API de clima y mapas: network first (si hay internet usa datos frescos)
-    if (url.hostname === 'api.open-meteo.com' ||
-        url.hostname.includes('basemaps.cartocdn.com') ||
-        url.hostname === 'unpkg.com' ||
-        url.hostname === 'fonts.googleapis.com' ||
-        url.hostname === 'fonts.gstatic.com') {
-        event.respondWith(
-            fetch(event.request)
-                .then(response => {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                    return response;
-                })
-                .catch(() => caches.match(event.request))
-        );
-        return;
-    }
-
-    // Para archivos locales: cache first
     event.respondWith(
-        caches.match(event.request)
-            .then(cached => cached || fetch(event.request))
+        fetch(event.request)
+            .then(response => {
+                // Guardar copia en cache
+                if (response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, clone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Sin internet: servir desde cache
+                return caches.match(event.request).then(cached => {
+                    if (cached) return cached;
+                    // Si es una navegación, devolver la página principal
+                    if (event.request.mode === 'navigate') {
+                        return caches.match(BASE_PATH + 'index.html');
+                    }
+                    return new Response('Offline', { status: 503 });
+                });
+            })
     );
 });
