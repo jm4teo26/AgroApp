@@ -1,0 +1,193 @@
+/* ========================================
+   AgroApp — Calendario estilos
+   ======================================== */
+
+.cal-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+.cal-title {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    min-width: 160px;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.cal-filter {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-lg);
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    background: var(--gradient-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-sm);
+    overflow: hidden;
+}
+
+.cal-header-cell {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--space-sm) 0;
+}
+
+.cal-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 40px;
+}
+
+.cal-cell:active {
+    background: var(--bg-elevated);
+}
+
+.cal-cell.other-month {
+    color: var(--text-tertiary);
+    opacity: 0.4;
+}
+
+.cal-cell.today {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green-400);
+    font-weight: 700;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.cal-cell.has-events::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 5px;
+    height: 5px;
+    background: var(--green-400);
+    border-radius: 50%;
+    box-shadow: 0 0 4px var(--green-400);
+}
+
+.cal-cell.has-events.multi::after {
+    width: 12px;
+    height: 4px;
+    border-radius: var(--radius-full);
+}
+
+/* Activity list */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.activity-entry {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-input);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--green-500);
+    transition: all var(--transition-fast);
+}
+
+.activity-entry:active {
+    background: var(--bg-elevated);
+}
+
+.activity-entry[data-type="siembra"] { border-left-color: var(--green-400); }
+.activity-entry[data-type="riego"] { border-left-color: var(--blue-400); }
+.activity-entry[data-type="fertilizacion"] { border-left-color: var(--amber-400); }
+.activity-entry[data-type="fumigacion"] { border-left-color: var(--purple-400); }
+.activity-entry[data-type="cosecha"] { border-left-color: #f59e0b; }
+.activity-entry[data-type="deshierbe"] { border-left-color: #34d399; }
+.activity-entry[data-type="preparacion"] { border-left-color: #a78bfa; }
+
+.activity-entry-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.activity-entry-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-entry-title {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-entry-meta {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+}
+
+.activity-entry-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.activity-complete-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--green-400);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.activity-complete-btn:active {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.activity-delete-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--red-400);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.activity-entry.completed {
+    opacity: 0.5;
+}
+
+.activity-entry.completed .activity-entry-title {
+    text-decoration: line-through;
+}

@@ -1,0 +1,128 @@
+/* ========================================
+   AgroApp — Modals (estilo iOS bottom sheet)
+   ======================================== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    width: 100%;
+    max-width: 500px;
+    max-height: 90dvh;
+    background: var(--bg-modal);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border: 1px solid var(--border-default);
+    border-bottom: none;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.modal-overlay.active .modal {
+    transform: translateY(0);
+}
+
+.modal-sm {
+    max-height: 50dvh;
+}
+
+.modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
+    margin: var(--space-sm) auto var(--space-xs);
+    flex-shrink: 0;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-xl) var(--space-md);
+    flex-shrink: 0;
+}
+
+.modal-header h3 {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-base);
+}
+
+.modal-close-btn:active {
+    background: var(--bg-card-hover);
+}
+
+.modal-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 var(--space-xl) var(--space-xl);
+    padding-bottom: calc(var(--space-xl) + var(--safe-bottom));
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--space-md);
+    padding-top: var(--space-lg);
+}
+
+.modal-actions .btn {
+    flex: 1;
+}
+
+/* Confirm modal */
+.confirm-text {
+    font-size: var(--fs-md);
+    color: var(--text-secondary);
+    text-align: center;
+    padding: var(--space-lg) 0;
+}
+
+/* Conditional fields animation */
+.conditional-fields {
+    animation: slideDown 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}

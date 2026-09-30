@@ -1,0 +1,168 @@
+/* ========================================
+   AgroApp — Dashboard estilos
+   ======================================== */
+
+.weather-quick {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.weather-temp {
+    font-size: var(--fs-3xl);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.weather-desc {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+    text-transform: capitalize;
+    margin-top: 2px;
+}
+
+.weather-icon-big {
+    font-size: 2.5rem;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+
+.weather-detail {
+    text-align: center;
+    padding: var(--space-sm);
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+}
+
+.weather-detail-value {
+    font-size: var(--fs-base);
+    font-weight: 700;
+    color: var(--green-300);
+}
+
+.weather-detail-label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.weather-placeholder {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--text-tertiary);
+}
+
+/* Activity preview */
+.activity-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-input);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--green-500);
+    transition: background var(--transition-fast);
+}
+
+.activity-item:active {
+    background: var(--bg-elevated);
+}
+
+.activity-item-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.activity-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-item-title {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-item-meta {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+}
+
+.activity-item-date {
+    font-size: var(--fs-xs);
+    color: var(--green-400);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* Alerts preview */
+.alerts-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+}
+
+.alert-item.alert-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.alert-item.alert-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.alert-item.alert-info {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.alert-item.alert-success {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.alert-item-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.alert-item-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.alert-item-text strong {
+    display: block;
+    margin-bottom: 2px;
+}

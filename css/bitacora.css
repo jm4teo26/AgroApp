@@ -1,0 +1,118 @@
+/* ========================================
+   AgroApp — Bitácora estilos
+   ======================================== */
+
+.bitacora-filter {
+    display: flex;
+    justify-content: flex-end;
+    margin: var(--space-md) 0;
+}
+
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.entry-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    position: relative;
+    animation: cardIn 0.3s ease forwards;
+}
+
+.entry-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+}
+
+.entry-card-type {
+    font-size: 1.2rem;
+    margin-right: var(--space-sm);
+}
+
+.entry-card-title {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    flex: 1;
+}
+
+.entry-card-date {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+    margin-top: var(--space-xs);
+}
+
+.entry-card-body {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.entry-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.entry-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+    background: var(--bg-input);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+}
+
+.entry-card-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.entry-action-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.entry-action-btn:active {
+    background: var(--bg-elevated);
+}
+
+/* Costos totales */
+.cost-summary {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cost-summary-label {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+}
+
+.cost-summary-value {
+    font-size: var(--fs-xl);
+    font-weight: 800;
+    color: var(--amber-400);
+}

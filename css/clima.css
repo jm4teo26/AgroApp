@@ -1,0 +1,196 @@
+/* ========================================
+   AgroApp — Clima estilos
+   ======================================== */
+
+.clima-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+/* Clima actual */
+.clima-current {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-glow);
+}
+
+.clima-current::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.clima-current-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-sm);
+}
+
+.clima-current-temp {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: var(--space-xs);
+}
+
+.clima-current-desc {
+    font-size: var(--fs-md);
+    color: var(--text-secondary);
+    text-transform: capitalize;
+    margin-bottom: var(--space-lg);
+}
+
+.clima-current-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.clima-detail-card {
+    background: var(--bg-input);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    text-align: center;
+}
+
+.clima-detail-card-icon {
+    font-size: 1.2rem;
+    margin-bottom: var(--space-xs);
+}
+
+.clima-detail-card-value {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--green-300);
+}
+
+.clima-detail-card-label {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Pronóstico */
+.forecast-section {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.forecast-title {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--green-400);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--space-md);
+}
+
+.forecast-scroll {
+    overflow-x: auto;
+    margin: 0 calc(-1 * var(--space-lg));
+    padding: 0 var(--space-lg);
+    -webkit-overflow-scrolling: touch;
+}
+
+.forecast-row {
+    display: flex;
+    gap: var(--space-md);
+    min-width: max-content;
+    padding-bottom: var(--space-sm);
+}
+
+.forecast-day {
+    text-align: center;
+    min-width: 72px;
+    padding: var(--space-md) var(--space-sm);
+    background: var(--bg-input);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.forecast-day.today {
+    border: 1px solid var(--green-500);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.forecast-day-name {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: var(--space-xs);
+}
+
+.forecast-day-icon {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
+}
+
+.forecast-day-temp {
+    font-size: var(--fs-base);
+    font-weight: 700;
+}
+
+.forecast-day-temp-min {
+    font-size: var(--fs-xs);
+    color: var(--text-tertiary);
+}
+
+.forecast-day-rain {
+    font-size: 10px;
+    color: var(--blue-400);
+    margin-top: 2px;
+}
+
+/* Alertas climáticas */
+.clima-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.clima-alert {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+}
+
+.clima-alert-frost {
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    color: var(--blue-400);
+}
+
+.clima-alert-heat {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: var(--amber-400);
+}
+
+.clima-alert-rain {
+    background: rgba(34, 211, 238, 0.1);
+    border: 1px solid rgba(34, 211, 238, 0.2);
+    color: var(--cyan-400);
+}
+
+.clima-alert-drought {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--red-400);
+}

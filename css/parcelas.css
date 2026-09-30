@@ -1,0 +1,122 @@
+/* ========================================
+   AgroApp — Parcelas estilos
+   ======================================== */
+
+.parcelas-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.parcela-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    animation: cardIn 0.3s ease forwards;
+}
+
+.parcela-card:active {
+    border-color: var(--border-strong);
+    background: var(--bg-card-hover);
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.parcela-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+}
+
+.parcela-card-name {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+}
+
+.parcela-card-cultivo {
+    font-size: var(--fs-sm);
+    color: var(--green-400);
+    margin-top: 2px;
+}
+
+.parcela-card-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.parcela-action-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.parcela-action-btn:active {
+    background: var(--bg-elevated);
+    transform: scale(0.9);
+}
+
+.parcela-action-btn.delete:active {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red-400);
+}
+
+.parcela-card-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+}
+
+.parcela-detail {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+}
+
+.parcela-detail-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.parcela-detail-text {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.parcela-detail-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Parcela card accent line */
+.parcela-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0.6;
+}
