@@ -55,7 +55,8 @@ const SuggestionsEngine = {
             // Obtener clima
             let weather = null;
             try {
-                weather = await WeatherService.fetchWeather(parcela.lat, parcela.lng);
+                const coords = WeatherService.getParcelaCoords(parcela) || { lat: 20.6597, lng: -103.3496 };
+                weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
             } catch { /* sin clima */ }
 
             const suelo = this.SOIL_WATER[parcela.suelo] || this.SOIL_WATER['franco'];

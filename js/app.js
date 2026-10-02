@@ -122,6 +122,15 @@ const App = {
 
         if (page === 'clima') {
             Utils.updateParcelaSelects();
+            const select = document.getElementById('climaParcelaSelect');
+            if (select) {
+                if (!select.value && select.options.length > 1) {
+                    select.selectedIndex = 1;
+                }
+                if (select.value) {
+                    this.loadClima(select.value);
+                }
+            }
         }
 
         if (page === 'dashboard') {
@@ -139,20 +148,21 @@ const App = {
         container.innerHTML = `
             <div class="ai-thinking">
                 <div class="ai-dots"><span></span><span></span><span></span></div>
-                <span>Cargando clima...</span>
+                <span>Cargando pronóstico para "${parcela.nombre}"...</span>
             </div>
         `;
 
         try {
             const coords = WeatherService.getParcelaCoords(parcela) || { lat: 20.6597, lng: -103.3496 };
-            const weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
-            if (!weather) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><h3>Error</h3><p>No se pudo obtener el clima</p></div>';
-                return;
+            let weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
+
+            if (!weather || !weather.current) {
+                weather = WeatherService.getSimulatedFallback(coords.lat, coords.lng);
             }
 
             const current = weather.current;
-            const daily = weather.daily;
+            const daily = weather.daily || {};
+            const isFallback = !!weather.isFallback;
 
             let html = '<div class="clima-grid">';
 
@@ -161,11 +171,11 @@ const App = {
                 <div class="clima-current">
                     <div class="clima-current-icon">${Utils.weatherIcon(current.weather_code)}</div>
                     <div class="clima-current-temp">${Math.round(current.temperature_2m)}°C</div>
-                    <div class="clima-current-desc">${Utils.weatherDesc(current.weather_code)}</div>
+                    <div class="clima-current-desc">${Utils.weatherDesc(current.weather_code)} • ${parcela.nombre} ${isFallback ? '<small style="opacity:0.6">(Modo sin red)</small>' : ''}</div>
                     <div class="clima-current-details">
                         <div class="clima-detail-card">
                             <div class="clima-detail-card-icon">🌡️</div>
-                            <div class="clima-detail-card-value">${Math.round(current.apparent_temperature)}°C</div>
+                            <div class="clima-detail-card-value">${Math.round(current.apparent_temperature || current.temperature_2m)}°C</div>
                             <div class="clima-detail-card-label">Sensación</div>
                         </div>
                         <div class="clima-detail-card">
@@ -180,7 +190,7 @@ const App = {
                         </div>
                         <div class="clima-detail-card">
                             <div class="clima-detail-card-icon">🌧️</div>
-                            <div class="clima-detail-card-value">${current.precipitation} mm</div>
+                            <div class="clima-detail-card-value">${current.precipitation || 0} mm</div>
                             <div class="clima-detail-card-label">Precipitación</div>
                         </div>
                     </div>
@@ -188,32 +198,39 @@ const App = {
             `;
 
             // Pronóstico 14 días
-            html += `
-                <div class="forecast-section">
-                    <div class="forecast-title">Pronóstico 14 días</div>
-                    <div class="forecast-scroll">
-                        <div class="forecast-row">
-            `;
-
-            for (let i = 0; i < daily.time.length; i++) {
-                const date = new Date(daily.time[i] + 'T12:00:00');
-                const isToday = i === 0;
+            if (daily && daily.time && daily.time.length > 0) {
                 html += `
-                    <div class="forecast-day ${isToday ? 'today' : ''}">
-                        <div class="forecast-day-name">${isToday ? 'Hoy' : Utils.dayNameShort(date)}</div>
-                        <div class="forecast-day-icon">${Utils.weatherIcon(daily.weather_code[i])}</div>
-                        <div class="forecast-day-temp">${Math.round(daily.temperature_2m_max[i])}°</div>
-                        <div class="forecast-day-temp-min">${Math.round(daily.temperature_2m_min[i])}°</div>
-                        ${daily.precipitation_sum[i] > 0 ? `<div class="forecast-day-rain">💧${daily.precipitation_sum[i].toFixed(0)}mm</div>` : ''}
+                    <div class="forecast-section">
+                        <div class="forecast-title">Pronóstico 14 días</div>
+                        <div class="forecast-scroll">
+                            <div class="forecast-row">
+                `;
+
+                for (let i = 0; i < daily.time.length; i++) {
+                    const date = new Date(daily.time[i] + 'T12:00:00');
+                    const isToday = i === 0;
+                    const maxT = daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[i]) : '--';
+                    const minT = daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[i]) : '--';
+                    const rain = daily.precipitation_sum ? daily.precipitation_sum[i] : 0;
+                    const code = daily.weather_code ? daily.weather_code[i] : 1;
+
+                    html += `
+                        <div class="forecast-day ${isToday ? 'today' : ''}">
+                            <div class="forecast-day-name">${isToday ? 'Hoy' : Utils.dayNameShort(date)}</div>
+                            <div class="forecast-day-icon">${Utils.weatherIcon(code)}</div>
+                            <div class="forecast-day-temp">${maxT}°</div>
+                            <div class="forecast-day-temp-min">${minT}°</div>
+                            ${rain > 0 ? `<div class="forecast-day-rain">💧${rain.toFixed(0)}mm</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                html += `
+                            </div>
+                        </div>
                     </div>
                 `;
             }
-
-            html += `
-                        </div>
-                    </div>
-                </div>
-            `;
 
             // Alertas
             const alerts = WeatherService.generateAlerts(weather, parcela);
@@ -248,8 +265,17 @@ const App = {
             container.innerHTML = html;
 
         } catch (err) {
-            console.error(err);
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><h3>Error</h3><p>No se pudo cargar el clima</p></div>';
+            console.error('Error cargando clima:', err);
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🌤️</div>
+                    <h3>Clima temporalmente no disponible</h3>
+                    <p>Revisa tu conexión a internet</p>
+                    <button class="btn btn-secondary btn-sm" onclick="App.loadClima('${parcelaId}')" style="margin-top:12px">
+                        🔄 Reintentar
+                    </button>
+                </div>
+            `;
         }
     },
 
