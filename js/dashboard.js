@@ -55,25 +55,50 @@ const DashboardModule = {
             return;
         }
 
-        container.innerHTML = '<div class="weather-placeholder"><p>Cargando clima...</p></div>';
+        container.innerHTML = '<div class="weather-placeholder"><p>🛰️ Consultando pronóstico...</p></div>';
+
+        // Buscar la primera parcela con coordenadas válidas
+        let p = null;
+        let coords = null;
+
+        for (const item of parcelas) {
+            const c = WeatherService.getParcelaCoords(item);
+            if (c) {
+                p = item;
+                coords = c;
+                break;
+            }
+        }
+
+        if (!coords) {
+            p = parcelas[0];
+            coords = { lat: 20.6597, lng: -103.3496 };
+        }
 
         try {
-            const p = parcelas[0];
-            const weather = await WeatherService.fetchWeather(p.lat, p.lng);
+            const weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
             if (!weather || !weather.current) {
-                container.innerHTML = '<div class="weather-placeholder"><p>No se pudo obtener el clima</p></div>';
+                container.innerHTML = `
+                    <div class="weather-placeholder">
+                        <p>No se pudo conectar al servicio meteorológico</p>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="DashboardModule.renderWeather()" style="margin-top:6px;padding:4px 10px;font-size:12px">
+                            🔄 Reintentar
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
             const current = weather.current;
             const icon = Utils.weatherIcon(current.weather_code);
             const desc = Utils.weatherDesc(current.weather_code);
+            const note = weather.isFallback ? ' <small style="opacity:0.6">(Estimado sin red)</small>' : '';
 
             container.innerHTML = `
                 <div class="weather-main">
                     <div>
                         <div class="weather-temp">${Math.round(current.temperature_2m)}°C</div>
-                        <div class="weather-desc">${desc} • ${p.nombre}</div>
+                        <div class="weather-desc">${desc} • ${p.nombre}${note}</div>
                     </div>
                     <div class="weather-icon-big">${icon}</div>
                 </div>
@@ -93,7 +118,14 @@ const DashboardModule = {
                 </div>
             `;
         } catch (err) {
-            container.innerHTML = '<div class="weather-placeholder"><p>Error al obtener clima</p></div>';
+            container.innerHTML = `
+                <div class="weather-placeholder">
+                    <p>Error al obtener clima</p>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="DashboardModule.renderWeather()" style="margin-top:6px;padding:4px 10px;font-size:12px">
+                        🔄 Reintentar
+                    </button>
+                </div>
+            `;
         }
     },
 
@@ -133,10 +165,13 @@ const DashboardModule = {
         const allAlerts = [];
         for (const p of parcelas) {
             try {
-                const weather = await WeatherService.fetchWeather(p.lat, p.lng);
-                if (weather) {
-                    const alerts = WeatherService.generateAlerts(weather, p);
-                    allAlerts.push(...alerts);
+                const coords = WeatherService.getParcelaCoords(p);
+                if (coords) {
+                    const weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
+                    if (weather) {
+                        const alerts = WeatherService.generateAlerts(weather, p);
+                        allAlerts.push(...alerts);
+                    }
                 }
             } catch { /* silent */ }
         }

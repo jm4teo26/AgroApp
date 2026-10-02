@@ -4,7 +4,7 @@
    Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v6-sat';
+const CACHE_NAME = 'agroapp-v7-weather';
 
 // Detectar la base path automáticamente
 const BASE_PATH = self.registration.scope;

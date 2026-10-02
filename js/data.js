@@ -137,12 +137,19 @@ const DB = {
     },
 
     // --- Weather Cache ---
-    getCachedWeather(lat, lng) {
+    getCachedWeather(lat, lng, allowStale = false) {
         try {
+            const numLat = parseFloat(lat);
+            const numLng = parseFloat(lng);
+            if (isNaN(numLat) || isNaN(numLng)) return null;
+
             const cache = JSON.parse(localStorage.getItem(this.KEYS.WEATHER_CACHE) || '{}');
-            const key = `${lat.toFixed(2)}_${lng.toFixed(2)}`;
+            const key = `${numLat.toFixed(2)}_${numLng.toFixed(2)}`;
             const entry = cache[key];
-            if (entry && Date.now() - entry.timestamp < 30 * 60 * 1000) { // 30 min cache
+            if (!entry) return null;
+
+            const maxAge = allowStale ? 48 * 60 * 60 * 1000 : 60 * 60 * 1000;
+            if (Date.now() - entry.timestamp < maxAge) {
                 return entry.data;
             }
             return null;
@@ -153,8 +160,12 @@ const DB = {
 
     setCachedWeather(lat, lng, data) {
         try {
+            const numLat = parseFloat(lat);
+            const numLng = parseFloat(lng);
+            if (isNaN(numLat) || isNaN(numLng)) return;
+
             const cache = JSON.parse(localStorage.getItem(this.KEYS.WEATHER_CACHE) || '{}');
-            const key = `${lat.toFixed(2)}_${lng.toFixed(2)}`;
+            const key = `${numLat.toFixed(2)}_${numLng.toFixed(2)}`;
             cache[key] = { data, timestamp: Date.now() };
             localStorage.setItem(this.KEYS.WEATHER_CACHE, JSON.stringify(cache));
         } catch { /* silent */ }

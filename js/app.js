@@ -144,7 +144,8 @@ const App = {
         `;
 
         try {
-            const weather = await WeatherService.fetchWeather(parcela.lat, parcela.lng);
+            const coords = WeatherService.getParcelaCoords(parcela) || { lat: 20.6597, lng: -103.3496 };
+            const weather = await WeatherService.fetchWeather(coords.lat, coords.lng);
             if (!weather) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><h3>Error</h3><p>No se pudo obtener el clima</p></div>';
                 return;
