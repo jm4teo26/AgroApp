@@ -226,6 +226,9 @@ const ParcelasModule = {
             const polygonInfo = hasPolygon
                 ? '<div class="parcela-polygon-info">📐 ' + p.polygon.length + ' vértices • Perímetro trazado</div>'
                 : '';
+            const certBadge = (p.folioRAN || p.ejido)
+                ? '<div class="parcela-ran-badge">📜 ' + (p.ejido ? p.ejido : 'Certificado') + (p.numParcela ? ' • P-' + p.numParcela : '') + (p.datum ? ' (' + p.datum + ')' : '') + '</div>'
+                : '';
             const exportBtn = hasPolygon
                 ? '<button class="parcela-action-btn export" onclick="ExportService.downloadCroquis(DB.getParcelaById(\'' + p.id + '\'))" aria-label="Croquis" title="Descargar croquis (PNG)">📄</button>'
                 : '';
@@ -235,6 +238,7 @@ const ParcelasModule = {
                     '<div>' +
                         '<div class="parcela-card-name">' + p.nombre + '</div>' +
                         '<div class="parcela-card-cultivo">🌽 ' + Utils.cultivoName(p.cultivo) + '</div>' +
+                        certBadge +
                     '</div>' +
                     '<div class="parcela-card-actions">' +
                         exportBtn +

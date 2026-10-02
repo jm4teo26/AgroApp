@@ -10,6 +10,9 @@ const App = {
         if (typeof MapService !== 'undefined' && MapService.init) {
             MapService.init();
         }
+        if (typeof CertificadoService !== 'undefined' && CertificadoService.init) {
+            CertificadoService.init();
+        }
 
         // Navegación inferior
         document.querySelectorAll('.nav-tab').forEach(tab => {

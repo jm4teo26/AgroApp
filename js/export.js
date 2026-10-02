@@ -127,14 +127,17 @@ const ExportService = {
 
         ctx.font = '600 22px Inter, Arial, sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('Parcela: "' + parcela.nombre + '"', 50, 88);
+        const ejidoTxt = (parcela.ejido ? ' • Ejido: ' + parcela.ejido : '') + (parcela.municipio ? ' (' + parcela.municipio + ')' : '');
+        ctx.fillText('Parcela: "' + parcela.nombre + '"' + ejidoTxt, 50, 88);
 
         const dateStr = new Date().toLocaleDateString('es-MX', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
-        ctx.font = '18px Inter, Arial, sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.65)';
-        ctx.fillText('Generado: ' + dateStr, 50, 118);
+        const folioTxt = parcela.folioRAN ? ' • Folio RAN: ' + parcela.folioRAN : '';
+        const datumTxt = parcela.datum ? ' • ' + parcela.datum + ' (Zona ' + (parcela.utmZone || 12) + 'N)' : '';
+        ctx.font = '16px Inter, Arial, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fillText('Generado: ' + dateStr + folioTxt + datumTxt, 50, 118);
 
         // === ÁREA DE DIBUJO DEL POLÍGONO ===
         const mapTop = headerH + 30;
@@ -320,8 +323,11 @@ const ExportService = {
         y += 30;
 
         const info = [
-            ['Area', areaHa.toFixed(4) + ' ha  (' + areaM2.toLocaleString('es-MX', { maximumFractionDigits: 0 }) + ' m\u00B2)'],
-            ['Perimetro', this.formatDist(perimeter)],
+            ['Área Calculada', areaHa.toFixed(4) + ' ha  (' + areaM2.toLocaleString('es-MX', { maximumFractionDigits: 0 }) + ' m\u00B2)'],
+            ...(parcela.hasAreasFormat ? [['Superficie Certificado', parcela.hasAreasFormat + ' Has. (' + parcela.superficie + ' ha)']] : []),
+            ...(parcela.ejido ? [['Ejido / Núcleo', parcela.ejido + (parcela.numParcela ? ' • Parcela ' + parcela.numParcela : '')]] : []),
+            ...(parcela.folioRAN ? [['Folio RAN', parcela.folioRAN]] : []),
+            ['Perímetro', this.formatDist(perimeter)],
             ['Cultivo', Utils.cultivoName(parcela.cultivo)],
             ['Suelo', Utils.sueloName(parcela.suelo)],
             ['Riego', Utils.riegoName(parcela.riego)]

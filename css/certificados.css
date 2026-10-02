@@ -1,0 +1,207 @@
+/* ========================================
+   AgroApp — Estilos de Certificados Parcelarios
+   ======================================== */
+
+.cert-btn-highlight {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+.cert-btn-highlight:hover {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(34, 197, 94, 0.25) 100%) !important;
+    border-color: #38bdf8 !important;
+}
+
+/* Selector Has - Áreas - Centiáreas */
+.cert-has-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.cert-unit-input {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cert-unit-input label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.cert-calc-preview {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+/* Opciones Datum y Zona */
+.cert-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: var(--space-md);
+}
+
+.cert-option-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+}
+
+.cert-option-card legend {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.cert-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
+.cert-radio-item input[type="radio"] {
+    accent-color: var(--green-500);
+}
+
+/* Pestañas de captura */
+.cert-tabs-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 10px;
+}
+
+.cert-tab-btn {
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cert-tab-btn.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+}
+
+.cert-tab-pane {
+    display: none;
+}
+
+.cert-tab-pane.active {
+    display: block;
+}
+
+/* Tabla manual de coordenadas */
+.cert-table-wrapper {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    background: var(--bg-card);
+}
+
+.cert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.cert-table th {
+    background: var(--bg-input);
+    padding: 8px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.cert-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.cert-input-sm {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: monospace;
+}
+
+/* Mapa de previsualización */
+.cert-preview-map {
+    width: 100%;
+    height: 220px;
+    border-radius: var(--radius-md);
+    background: #0f172a;
+    border: 1px solid var(--border-default);
+    margin-top: 10px;
+}
+
+/* Badges de comparación */
+.cert-badge {
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    margin-top: 8px;
+    display: none;
+}
+
+.cert-badge-match {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #4ade80;
+}
+
+.cert-badge-warn {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+}
+
+.cert-badge-diff {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+}
+
+/* Badge en tarjeta de parcela */
+.parcela-ran-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(14, 165, 233, 0.12);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    color: #38bdf8;
+    margin-top: 6px;
+    font-weight: 600;
+}

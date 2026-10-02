@@ -41,6 +41,7 @@
     <link rel="stylesheet" href="css/sugerencias.css">
     <link rel="stylesheet" href="css/modals.css">
     <link rel="stylesheet" href="css/polygon.css?v=3.1">
+    <link rel="stylesheet" href="css/certificados.css?v=3.7">
 </head>
 <body>
     <!-- Pantalla de carga -->
@@ -124,10 +125,13 @@
 
             <!-- === PARCELAS === -->
             <section class="page" id="page-parcelas">
-                <div class="page-actions">
-                    <button class="btn btn-primary" id="btnAddParcela">
+                <div class="page-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-primary" id="btnAddParcela" style="flex:1">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Nueva Parcela
+                    </button>
+                    <button class="btn cert-btn-highlight" id="btnOpenCertificado" style="flex:1">
+                        📜 Certificado Parcelario
                     </button>
                 </div>
 
@@ -287,6 +291,15 @@
                 <button class="modal-close-btn" data-close="modalParcela">✕</button>
             </div>
             <form id="formParcela" class="modal-scroll">
+                <div style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:var(--radius-md);padding:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#38bdf8">📜 ¿Tienes el Certificado Ejidal en papel?</div>
+                        <div style="font-size:11px;color:var(--text-secondary)">Carga las coordenadas UTM directas del RAN</div>
+                    </div>
+                    <button type="button" class="btn btn-sm cert-btn-highlight" id="btnOpenCertificadoFromParcela" style="font-size:11px;padding:5px 10px">
+                        Cargar
+                    </button>
+                </div>
                 <div class="form-group">
                     <label>Nombre de la parcela *</label>
                     <input type="text" id="parcelaNombre" class="input" placeholder="Ej: Parcela Norte" required>
@@ -613,29 +626,210 @@
         </div>
     </div>
 
+    <!-- Modal: Cargar Certificado Parcelario (RAN / PROCEDE) -->
+    <div class="modal-overlay" id="modalCertificado">
+        <div class="modal modal-fullscreen">
+            <div class="modal-header">
+                <div>
+                    <h3 style="display:flex;align-items:center;gap:6px">📜 Certificado Parcelario (RAN)</h3>
+                    <div style="font-size:12px;color:var(--text-secondary)">Ingreso oficial por coordenadas UTM de Sinaloa y México</div>
+                </div>
+                <button class="modal-close-btn" data-close="modalCertificado">✕</button>
+            </div>
+            <div class="modal-scroll" style="padding:var(--space-md)">
+                <!-- Sección 1: Datos del Certificado -->
+                <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                    <span>1. Datos del Registro Agrario</span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Ejido / Parcela *</label>
+                        <input type="text" id="certEjido" class="input" placeholder="Ej: Ejido La Palma" required>
+                    </div>
+                    <div class="form-group">
+                        <label>No. de Parcela</label>
+                        <input type="text" id="certNumParcela" class="input" placeholder="Ej: 34 (Z-1 P-2)">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Municipio de Sinaloa *</label>
+                        <select id="certMunicipio" class="input"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Folio / Certificado RAN (Opcional)</label>
+                        <input type="text" id="certFolio" class="input" placeholder="Ej: 0000012345">
+                    </div>
+                </div>
+
+                <!-- Superficie oficial en Has - Áreas - Centiáreas -->
+                <div class="form-group">
+                    <label>Superficie Oficial (Has — Áreas — Centiáreas)</label>
+                    <div class="cert-has-grid">
+                        <div class="cert-unit-input">
+                            <label>Hectáreas (Has)</label>
+                            <input type="number" step="1" min="0" id="certHas" class="input" placeholder="Ej: 5">
+                        </div>
+                        <div class="cert-unit-input">
+                            <label>Áreas</label>
+                            <input type="number" step="1" min="0" max="99" id="certAreas" class="input" placeholder="Ej: 40">
+                        </div>
+                        <div class="cert-unit-input">
+                            <label>Centiáreas</label>
+                            <input type="number" step="any" min="0" max="99.99" id="certCentiareas" class="input" placeholder="Ej: 20.50">
+                        </div>
+                    </div>
+                    <div id="certDeclaredHaDisplay" class="cert-calc-preview">— ha</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cultivo Principal</label>
+                        <select id="certCultivo" class="input">
+                            <option value="maiz">🌽 Maíz</option>
+                            <option value="frijol">🫘 Frijol</option>
+                            <option value="trigo">🌾 Trigo</option>
+                            <option value="sorgo">🌾 Sorgo</option>
+                            <option value="tomate">🍅 Tomate</option>
+                            <option value="chile">🌶️ Chile</option>
+                            <option value="cebolla">🧅 Cebolla</option>
+                            <option value="papa">🥔 Papa</option>
+                            <option value="garbanzo">🌱 Garbanzo</option>
+                            <option value="calabaza">🎃 Calabaza</option>
+                            <option value="pepino">🥒 Pepino</option>
+                            <option value="otro">🌱 Otro cultivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sistema de Riego</label>
+                        <select id="certRiego" class="input">
+                            <option value="surcos">Surcos / Gravedad (Canal)</option>
+                            <option value="goteo">Riego por goteo</option>
+                            <option value="aspersion">Aspersión</option>
+                            <option value="temporal">Temporal (lluvia)</option>
+                            <option value="pivote">Pivote central</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr style="border:none;border-top:1px solid var(--border-subtle);margin:16px 0">
+
+                <!-- Sección 2: Datum y Zona UTM -->
+                <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px">
+                    <span>2. Sistema del Certificado (Datum y Zona UTM)</span>
+                </div>
+                <div class="cert-options-grid">
+                    <fieldset class="cert-option-card">
+                        <legend>Sistema de Referencia (Datum)</legend>
+                        <label class="cert-radio-item">
+                            <input type="radio" name="certDatum" value="WGS84" checked>
+                            <span><strong>WGS84</strong> (Certificado reciente / FANAR)</span>
+                        </label>
+                        <label class="cert-radio-item">
+                            <input type="radio" name="certDatum" value="NAD27">
+                            <span><strong>NAD27</strong> (PROCEDE anterior a 2008 con corrección INEGI)</span>
+                        </label>
+                    </fieldset>
+                    <fieldset class="cert-option-card">
+                        <legend>Zona UTM de México</legend>
+                        <label class="cert-radio-item">
+                            <input type="radio" name="certUtmZone" value="12" checked>
+                            <span><strong>Zona 12N</strong> (Ahome, Guasave, El Fuerte, Sinaloa Nte)</span>
+                        </label>
+                        <label class="cert-radio-item">
+                            <input type="radio" name="certUtmZone" value="13">
+                            <span><strong>Zona 13N</strong> (Culiacán, Navolato, Mazatlán, Sur)</span>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <hr style="border:none;border-top:1px solid var(--border-subtle);margin:16px 0">
+
+                <!-- Sección 3: Cuadro de Construcción (Vértices) -->
+                <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px">
+                    <span>3. Cuadro de Construcción (Vértices)</span>
+                </div>
+                <div class="cert-tabs-bar">
+                    <button type="button" class="cert-tab-btn active" data-pane="certPanePaste">📋 Pegar Texto / PDF</button>
+                    <button type="button" class="cert-tab-btn" data-pane="certPaneTable">✍️ Tabla Fila por Fila</button>
+                </div>
+
+                <!-- Pestaña 1: Pegar Texto -->
+                <div class="cert-tab-pane active" id="certPanePaste">
+                    <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">
+                        💡 Pega las filas del cuadro de coordenadas (ej: <code>1 245180.45 2745612.30</code>). La app detecta automáticamente X e Y.
+                    </div>
+                    <textarea id="certPasteInput" class="input" rows="5" placeholder="Ejemplo:&#10;1  245180.45  2745612.30&#10;2  245390.20  2745740.10&#10;3  245410.80  2745420.50&#10;4  245190.10  2745380.00" style="font-family:monospace;font-size:12px"></textarea>
+                    <button type="button" class="btn btn-secondary" id="btnCertParseText" style="margin-top:6px;width:100%">
+                        ⚡ Cargar y Convertir Vértices
+                    </button>
+                </div>
+
+                <!-- Pestaña 2: Tabla Manual -->
+                <div class="cert-tab-pane" id="certPaneTable">
+                    <div class="cert-table-wrapper">
+                        <table class="cert-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:50px">Vértice</th>
+                                    <th>X (Este)</th>
+                                    <th>Y (Norte)</th>
+                                    <th style="width:40px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="certTableBody">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="btnCertAddRow" style="font-size:12px;padding:6px 12px">
+                        ➕ Agregar Vértice
+                    </button>
+                </div>
+
+                <!-- Previsualización en Satélite -->
+                <div id="certPreviewMap" class="cert-preview-map"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                    <div style="font-size:12px;color:var(--text-secondary)">
+                        Vértices: <strong id="certPointCountDisplay" style="color:var(--text-primary)">0</strong> • Área calculada: <strong id="certAreaDisplay" style="color:#4ade80">— ha</strong>
+                    </div>
+                </div>
+
+                <div id="certComparisonBadge" class="cert-badge"></div>
+
+                <div class="modal-actions" style="margin-top:16px">
+                    <button type="button" class="btn btn-secondary" data-close="modalCertificado">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnCertSave">💾 Guardar Parcela Oficial</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toasts -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/data.js?v=3.6"></script>
-    <script src="js/utils.js?v=3.6"></script>
-    <script src="js/weather.js?v=3.6"></script>
-    <script src="js/suggestions.js?v=3.6"></script>
-    <script src="js/maps.js?v=3.6"></script>
-    <script src="js/export.js?v=3.6"></script>
-    <script src="js/parcelas.js?v=3.6"></script>
-    <script src="js/calendario.js?v=3.6"></script>
-    <script src="js/bitacora.js?v=3.6"></script>
-    <script src="js/dashboard.js?v=3.6"></script>
-    <script src="js/app.js?v=3.6"></script>
+    <script src="js/data.js?v=3.7"></script>
+    <script src="js/utils.js?v=3.7"></script>
+    <script src="js/weather.js?v=3.7"></script>
+    <script src="js/suggestions.js?v=3.7"></script>
+    <script src="js/maps.js?v=3.7"></script>
+    <script src="js/export.js?v=3.7"></script>
+    <script src="js/certificados.js?v=3.7"></script>
+    <script src="js/parcelas.js?v=3.7"></script>
+    <script src="js/calendario.js?v=3.7"></script>
+    <script src="js/bitacora.js?v=3.7"></script>
+    <script src="js/dashboard.js?v=3.7"></script>
+    <script src="js/app.js?v=3.7"></script>
 
     <!-- Limpiar caches anteriores y registrar Service Worker -->
     <script>
         if ('caches' in window) {
             caches.keys().then(keys => {
                 keys.forEach(k => {
-                    if (k !== 'agroapp-v12-sat') caches.delete(k);
+                    if (k !== 'agroapp-v13-cert') caches.delete(k);
                 });
             });
         }
