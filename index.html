@@ -377,8 +377,34 @@
                 <button class="modal-close-btn" id="btnPolygonClose" type="button">✕</button>
             </div>
             <div class="polygon-draw-area">
+                <!-- Barra de herramientas: Coordenadas y Cuadrar Hectáreas -->
+                <div class="poly-tools-bar">
+                    <div class="poly-tools-row">
+                        <div class="poly-input-group">
+                            <label>Latitud</label>
+                            <input type="number" step="any" id="polyInputLat" placeholder="20.6597">
+                        </div>
+                        <div class="poly-input-group">
+                            <label>Longitud</label>
+                            <input type="number" step="any" id="polyInputLng" placeholder="-103.3496">
+                        </div>
+                        <button type="button" class="poly-tools-btn poly-btn-secondary" id="btnPolyGoCoord" title="Ubicar y marcar coordenada en el satélite">
+                            📍 Marcar Terreno
+                        </button>
+                    </div>
+                    <div class="poly-tools-row">
+                        <div class="poly-input-group" style="max-width:130px">
+                            <label>Hectáreas</label>
+                            <input type="number" step="0.01" min="0.01" id="polyInputHa" placeholder="1.0" value="1.0">
+                        </div>
+                        <button type="button" class="poly-tools-btn poly-btn-primary" id="btnPolySquareArea" title="Generar cuadro de hectáreas en el punto del terreno">
+                            🔲 Cuadrar Hectáreas
+                        </button>
+                    </div>
+                </div>
+
                 <div class="polygon-instructions">
-                    💡 Toca el mapa satelital para colocar esquinas (mínimo 3). Puedes arrastrar cualquier esquina para corregir la posición.
+                    💡 <strong>1. Ubica:</strong> Escribe coordenadas o toca el satélite para marcar tu terreno. <strong>2. Cuadra:</strong> Usa <em>"Cuadrar Hectáreas"</em> o toca esquinas. <strong>3. Ajusta:</strong> Arrastra los puntos azules (A, B, C...) a las orillas reales.
                 </div>
                 <div id="polygonDrawMap" class="polygon-draw-map"></div>
                 <div class="polygon-info-bar">

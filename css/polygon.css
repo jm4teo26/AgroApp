@@ -1,12 +1,7 @@
 /* ========================================
    AgroApp — Estilos para polígono y exportación
+   Capa Satelital y Trazado de Terrenos
    ======================================== */
-
-/* === Dark tiles para mapas del app === */
-.mini-map .leaflet-tile,
-.full-map .leaflet-tile {
-    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-}
 
 /* === Modal fullscreen (para dibujo de polígono) === */
 .modal.modal-fullscreen {
@@ -21,6 +16,91 @@
     flex-shrink: 0;
 }
 
+/* === Barra de herramientas para ubicar y cuadrar terreno === */
+.poly-tools-bar {
+    background: #0f172a;
+    border-bottom: 1px solid var(--border-default);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.poly-tools-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.poly-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 95px;
+}
+
+.poly-input-group label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.poly-input-group input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-size: 13px;
+    padding: 7px 8px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color var(--transition-fast);
+}
+
+.poly-input-group input:focus {
+    border-color: var(--green-400);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.poly-tools-btn {
+    white-space: nowrap;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    height: 34px;
+}
+
+.poly-btn-primary {
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+}
+.poly-btn-primary:hover, .poly-btn-primary:active {
+    background: #22c55e;
+}
+
+.poly-btn-secondary {
+    background: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+}
+.poly-btn-secondary:hover, .poly-btn-secondary:active {
+    background: #475569;
+}
+
 /* === Área de dibujo === */
 .polygon-draw-area {
     flex: 1;
@@ -31,13 +111,23 @@
 }
 
 .polygon-instructions {
-    padding: 8px 16px;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: var(--fs-sm);
-    background: var(--bg-secondary);
+    padding: 8px 12px;
+    text-align: left;
+    color: #cbd5e1;
+    font-size: 11px;
+    background: rgba(15, 23, 42, 0.95);
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
+    line-height: 1.4;
+}
+
+.polygon-instructions strong {
+    color: #86efac;
+}
+
+.polygon-instructions em {
+    color: #facc15;
+    font-style: normal;
 }
 
 .polygon-draw-map {
@@ -92,7 +182,7 @@
     padding: 10px 8px;
 }
 
-/* === Marcador de esquina del polígono === */
+/* === Marcador de esquina del polígono (A, B, C...) === */
 .poly-corner-icon {
     background: none !important;
     border: none !important;
@@ -102,23 +192,83 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #1565c0;
+    background: #1d4ed8;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 800;
     font-family: Inter, sans-serif;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    border: 3px solid #ffffff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     cursor: grab;
     transition: transform 0.15s ease;
 }
 
 .poly-corner-marker:active {
     cursor: grabbing;
-    transform: scale(1.2);
+    transform: scale(1.25);
+    background: #2563eb;
+}
+
+/* === Marcador del Punto del Terreno / Referencia === */
+.poly-ref-icon {
+    background: none !important;
+    border: none !important;
+}
+
+.poly-ref-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.poly-ref-pulse {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.35);
+    border: 2px solid #ef4444;
+    animation: refPulse 2s infinite ease-out;
+}
+
+@keyframes refPulse {
+    0% { transform: scale(0.6); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+
+.poly-ref-pin {
+    font-size: 26px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+    cursor: grab;
+    z-index: 2;
+}
+
+.poly-ref-pin:active {
+    cursor: grabbing;
+    transform: scale(1.15);
+}
+
+.poly-ref-badge {
+    position: absolute;
+    top: -12px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #fff;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    pointer-events: none;
+    z-index: 3;
 }
 
 /* === Indicador de estado del polígono en formulario === */
@@ -134,13 +284,13 @@
 }
 
 .polygon-status.defined {
-    background: rgba(34, 197, 94, 0.1);
+    background: rgba(34, 197, 94, 0.15);
     color: var(--green-400);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .polygon-status.undefined {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-tertiary);
     border: 1px solid var(--border-subtle);
 }
@@ -168,16 +318,4 @@
 .parcela-action-btn.export:active {
     color: var(--blue-500);
     background: rgba(96, 165, 250, 0.1);
-}
-
-/* === Leaflet layer control en tema oscuro === */
-.polygon-draw-map .leaflet-control-layers {
-    background: rgba(255,255,255,0.95);
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.polygon-draw-map .leaflet-control-layers-list label {
-    font-family: Inter, sans-serif;
-    font-size: 13px;
 }

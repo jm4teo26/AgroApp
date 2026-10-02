@@ -1,6 +1,7 @@
 /* ========================================
    AgroApp — Módulo de Parcelas
-   Con soporte para polígono y exportación
+   Con soporte para satélite, ubicación de terreno,
+   cuadre de hectáreas y exportación de croquis
    ======================================== */
 
 const ParcelasModule = {
@@ -12,13 +13,14 @@ const ParcelasModule = {
     _polyMarkers: [],
     _polyLine: null,
     _polyFill: null,
+    _refMarker: null,
 
     init() {
         // Botones de agregar parcela
         document.getElementById('btnAddParcela').addEventListener('click', () => this.openForm());
         document.getElementById('btnAddParcelaEmpty').addEventListener('click', () => this.openForm());
 
-        // GPS
+        // GPS en formulario
         document.getElementById('btnGetLocation').addEventListener('click', () => this.getGPS());
 
         // Form submit
@@ -30,6 +32,34 @@ const ParcelasModule = {
         document.getElementById('btnPolyClear').addEventListener('click', () => this._clearPolyPoints());
         document.getElementById('btnPolySave').addEventListener('click', () => this._savePolygon());
         document.getElementById('btnPolygonClose').addEventListener('click', () => this._closePolygonModal(true));
+
+        // Herramientas de coordenadas y cuadre de hectáreas
+        const btnGoCoord = document.getElementById('btnPolyGoCoord');
+        if (btnGoCoord) {
+            btnGoCoord.addEventListener('click', () => this.markTerrainCoord());
+        }
+
+        const btnSquare = document.getElementById('btnPolySquareArea');
+        if (btnSquare) {
+            btnSquare.addEventListener('click', () => this.squareHectares());
+        }
+
+        // Auto-detección al pegar coordenadas en input lat (ej: "20.6597, -103.3496")
+        const inputLat = document.getElementById('polyInputLat');
+        if (inputLat) {
+            inputLat.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (val && (val.includes(',') || val.includes(' '))) {
+                    const parts = val.split(/[,\s]+/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                    if (parts.length >= 2) {
+                        inputLat.value = parts[0];
+                        const inputLng = document.getElementById('polyInputLng');
+                        if (inputLng) inputLng.value = parts[1];
+                        this.markTerrainCoord(false);
+                    }
+                }
+            });
+        }
 
         // Cerrar modal polígono al tocar fuera
         const polyOverlay = document.getElementById('modalPolygon');
@@ -124,7 +154,6 @@ const ParcelasModule = {
         const existingId = document.getElementById('parcelaId').value;
         if (existingId) {
             parcela.id = existingId;
-            // Conservar polígono existente si no se redibujó
             if (!parcela.polygon) {
                 const existing = DB.getParcelaById(existingId);
                 if (existing && existing.polygon) {
@@ -188,17 +217,17 @@ const ParcelasModule = {
         list.innerHTML = parcelas.map((p, i) => {
             const hasPolygon = p.polygon && p.polygon.length >= 3;
             const polygonInfo = hasPolygon
-                ? '<div class="parcela-polygon-info">\uD83D\uDCD0 ' + p.polygon.length + ' vértices \u2022 Perímetro trazado</div>'
+                ? '<div class="parcela-polygon-info">📐 ' + p.polygon.length + ' vértices • Perímetro trazado</div>'
                 : '';
             const exportBtn = hasPolygon
-                ? '<button class="parcela-action-btn export" onclick="ExportService.downloadCroquis(DB.getParcelaById(\'' + p.id + '\'))" aria-label="Croquis" title="Descargar croquis">\uD83D\uDCC4</button>'
+                ? '<button class="parcela-action-btn export" onclick="ExportService.downloadCroquis(DB.getParcelaById(\'' + p.id + '\'))" aria-label="Croquis" title="Descargar croquis">📄</button>'
                 : '';
 
             return '<div class="parcela-card" style="animation-delay:' + (i * 0.05) + 's">' +
                 '<div class="parcela-card-header">' +
                     '<div>' +
                         '<div class="parcela-card-name">' + p.nombre + '</div>' +
-                        '<div class="parcela-card-cultivo">\uD83C\uDF3D ' + Utils.cultivoName(p.cultivo) + '</div>' +
+                        '<div class="parcela-card-cultivo">🌽 ' + Utils.cultivoName(p.cultivo) + '</div>' +
                     '</div>' +
                     '<div class="parcela-card-actions">' +
                         exportBtn +
@@ -212,19 +241,19 @@ const ParcelasModule = {
                 '</div>' +
                 '<div class="parcela-card-details">' +
                     '<div class="parcela-detail">' +
-                        '<span class="parcela-detail-icon">\uD83D\uDCCD</span>' +
+                        '<span class="parcela-detail-icon">📍</span>' +
                         '<span class="parcela-detail-text"><strong>' + p.lat.toFixed(4) + ', ' + p.lng.toFixed(4) + '</strong></span>' +
                     '</div>' +
                     '<div class="parcela-detail">' +
-                        '<span class="parcela-detail-icon">\uD83D\uDCD0</span>' +
-                        '<span class="parcela-detail-text"><strong>' + (p.superficie ? p.superficie + ' ha' : '\u2014') + '</strong></span>' +
+                        '<span class="parcela-detail-icon">📐</span>' +
+                        '<span class="parcela-detail-text"><strong>' + (p.superficie ? p.superficie + ' ha' : '—') + '</strong></span>' +
                     '</div>' +
                     '<div class="parcela-detail">' +
-                        '<span class="parcela-detail-icon">\uD83C\uDF0D</span>' +
+                        '<span class="parcela-detail-icon">🌍</span>' +
                         '<span class="parcela-detail-text"><strong>' + Utils.sueloName(p.suelo) + '</strong></span>' +
                     '</div>' +
                     '<div class="parcela-detail">' +
-                        '<span class="parcela-detail-icon">\uD83D\uDCA7</span>' +
+                        '<span class="parcela-detail-icon">💧</span>' +
                         '<span class="parcela-detail-text"><strong>' + Utils.riegoName(p.riego) + '</strong></span>' +
                     '</div>' +
                 '</div>' +
@@ -233,7 +262,7 @@ const ParcelasModule = {
         }).join('');
     },
 
-    // === DIBUJO DE POLÍGONO ===
+    // === DIBUJO DE POLÍGONO Y SATÉLITE ===
 
     openPolygonDrawer() {
         this._saveFormState();
@@ -280,42 +309,50 @@ const ParcelasModule = {
             this._polyMap = null;
         }
 
-        // Centro del mapa
+        // Centro inicial
         let center = [23.6345, -102.5528];
         let zoom = 5;
         const lat = parseFloat(this._formState ? this._formState.lat : '');
         const lng = parseFloat(this._formState ? this._formState.lng : '');
-        if (!isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
+        const hasInitCoord = !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
+
+        if (hasInitCoord) {
             center = [lat, lng];
             zoom = 17;
         }
 
         this._polyMap = L.map('polygonDrawMap', { center: center, zoom: zoom, zoomControl: true });
 
-        // Capas: Satélite + Mapa
-        const osmLayer = L.tileLayer(MapService.TILE_URL, {
-            maxZoom: 20, attribution: '\u00A9 OSM'
-        });
-        const satLayer = L.tileLayer(
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            { maxZoom: 19, attribution: '\u00A9 Esri' }
-        );
-        satLayer.addTo(this._polyMap);
-        L.control.layers({ '\uD83D\uDDFA\uFE0F Mapa': osmLayer, '\uD83D\uDEF0\uFE0F Satélite': satLayer }).addTo(this._polyMap);
+        // Capa Satélite pura con carreteras y poblados superpuestos (EXCLUSIVA)
+        L.tileLayer(MapService.SAT_URL, {
+            attribution: MapService.SAT_ATTR,
+            maxZoom: 19
+        }).addTo(this._polyMap);
+
+        L.tileLayer(MapService.LABELS_URL, {
+            maxZoom: 19,
+            opacity: 0.85
+        }).addTo(this._polyMap);
 
         // Botón GPS en el mapa
         const self = this;
         const GpsControl = L.Control.extend({
             onAdd: function() {
                 const btn = L.DomUtil.create('div', 'leaflet-bar');
-                btn.innerHTML = '<a href="#" title="Mi ubicación" style="font-size:18px;line-height:30px;text-align:center;display:block;width:30px;height:30px">\uD83D\uDCCD</a>';
+                btn.innerHTML = '<a href="#" title="Mi ubicación GPS" style="font-size:18px;line-height:30px;text-align:center;display:block;width:30px;height:30px">📍</a>';
                 L.DomEvent.on(btn, 'click', function(e) {
                     L.DomEvent.preventDefault(e);
                     L.DomEvent.stopPropagation(e);
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition(
-                            function(pos) { self._polyMap.setView([pos.coords.latitude, pos.coords.longitude], 17); },
-                            function() { Utils.showToast('No se pudo obtener ubicación', 'error'); },
+                            function(pos) {
+                                const gLat = pos.coords.latitude;
+                                const gLng = pos.coords.longitude;
+                                document.getElementById('polyInputLat').value = gLat.toFixed(6);
+                                document.getElementById('polyInputLng').value = gLng.toFixed(6);
+                                self.markTerrainCoord(false);
+                            },
+                            function() { Utils.showToast('No se pudo obtener ubicación GPS', 'error'); },
                             { enableHighAccuracy: true }
                         );
                     }
@@ -325,13 +362,25 @@ const ParcelasModule = {
         });
         new GpsControl({ position: 'topleft' }).addTo(this._polyMap);
 
-        // Reset estado
+        // Reset estado de puntos
         this._polyPoints = [];
         this._polyMarkers = [];
         this._polyLine = null;
         this._polyFill = null;
+        this._refMarker = null;
 
-        // Cargar polígono existente
+        // Prefill de coordenadas y hectáreas si existían en el formulario
+        if (hasInitCoord) {
+            document.getElementById('polyInputLat').value = lat.toFixed(6);
+            document.getElementById('polyInputLng').value = lng.toFixed(6);
+            this.markTerrainCoord(true);
+        }
+
+        if (this._formState && this._formState.superficie) {
+            document.getElementById('polyInputHa').value = this._formState.superficie;
+        }
+
+        // Cargar polígono existente si ya lo tenía
         if (this._pendingPolygon && this._pendingPolygon.length > 0) {
             this._pendingPolygon.forEach(function(p) {
                 self._addPolyPoint(L.latLng(p.lat, p.lng));
@@ -344,11 +393,126 @@ const ParcelasModule = {
             }
         }
 
-        // Click para agregar punto
+        // Click en el satélite para colocar esquinas manualmente
         this._polyMap.on('click', function(e) { self._addPolyPoint(e.latlng); });
 
         this._updatePolyInfo();
         this._updatePolyButtons();
+    },
+
+    // Marcar punto de terreno mediante coordenadas
+    markTerrainCoord(silent = false) {
+        const inputLat = document.getElementById('polyInputLat');
+        const inputLng = document.getElementById('polyInputLng');
+
+        let lat = parseFloat(inputLat ? inputLat.value : '');
+        let lng = parseFloat(inputLng ? inputLng.value : '');
+
+        if (isNaN(lat) || isNaN(lng)) {
+            if (!silent) Utils.showToast('Ingresa latitud y longitud válidas', 'error');
+            return null;
+        }
+
+        if (this._refMarker) {
+            this._polyMap.removeLayer(this._refMarker);
+            this._refMarker = null;
+        }
+
+        const self = this;
+        this._refMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                html: '<div class="poly-ref-wrapper"><div class="poly-ref-pulse"></div><div class="poly-ref-pin">📍</div><div class="poly-ref-badge">Terreno</div></div>',
+                className: 'poly-ref-icon',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            }),
+            draggable: true,
+            zIndexOffset: 600
+        }).addTo(this._polyMap);
+
+        this._refMarker.bindPopup(`
+            <div style="font-family:Inter,sans-serif;font-size:12px;text-align:center">
+                <strong style="color:#dc2626">📍 Terreno Marcado</strong><br>
+                <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span><br>
+                <small style="color:#64748b">Arrastra el pin para reubicar</small>
+            </div>
+        `);
+
+        this._refMarker.on('drag', function() {
+            const pos = self._refMarker.getLatLng();
+            if (inputLat) inputLat.value = pos.lat.toFixed(6);
+            if (inputLng) inputLng.value = pos.lng.toFixed(6);
+        });
+
+        this._polyMap.setView([lat, lng], 17);
+
+        if (!silent) {
+            Utils.showToast(`📍 Terreno ubicado en ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'success');
+        }
+
+        return { lat, lng };
+    },
+
+    // Cuadrar hectáreas alrededor del punto marcado
+    squareHectares() {
+        const haInput = document.getElementById('polyInputHa');
+        const ha = parseFloat(haInput ? haInput.value : '') || 1.0;
+
+        if (ha <= 0) {
+            Utils.showToast('Ingresa una cantidad de hectáreas válida', 'error');
+            return;
+        }
+
+        // Obtener centro: de inputs, del marcador de terreno o del centro del mapa
+        let center = null;
+        const inputLat = parseFloat(document.getElementById('polyInputLat').value);
+        const inputLng = parseFloat(document.getElementById('polyInputLng').value);
+
+        if (!isNaN(inputLat) && !isNaN(inputLng)) {
+            center = { lat: inputLat, lng: inputLng };
+        } else if (this._refMarker) {
+            const p = this._refMarker.getLatLng();
+            center = { lat: p.lat, lng: p.lng };
+        } else {
+            const c = this._polyMap.getCenter();
+            center = { lat: c.lat, lng: c.lng };
+            document.getElementById('polyInputLat').value = center.lat.toFixed(6);
+            document.getElementById('polyInputLng').value = center.lng.toFixed(6);
+        }
+
+        // Marcar el punto central
+        this.markTerrainCoord(true);
+
+        // Calcular esquinas cuadradas para exactamente `ha` hectáreas
+        // 1 ha = 10,000 m² -> lado = sqrt(ha * 10000)
+        const areaM2 = ha * 10000;
+        const sideMeters = Math.sqrt(areaM2);
+        const halfSide = sideMeters / 2;
+
+        const dLat = halfSide / 111320;
+        const cosLat = Math.cos(center.lat * Math.PI / 180) || 1;
+        const dLng = halfSide / (111320 * cosLat);
+
+        const corners = [
+            L.latLng(center.lat + dLat, center.lng - dLng), // A: Noroeste
+            L.latLng(center.lat + dLat, center.lng + dLng), // B: Noreste
+            L.latLng(center.lat - dLat, center.lng + dLng), // C: Sureste
+            L.latLng(center.lat - dLat, center.lng - dLng)  // D: Suroeste
+        ];
+
+        // Limpiar puntos previos del polígono
+        this._clearPolyPoints();
+
+        // Agregar las 4 esquinas cuadradas
+        const self = this;
+        corners.forEach(function(pt) {
+            self._addPolyPoint(pt);
+        });
+
+        // Ajustar vista para abarcar el cuadrado
+        this._polyMap.fitBounds(corners.map(c => [c.lat, c.lng]), { padding: [60, 60] });
+
+        Utils.showToast(`✅ Cuadradas ${ha} ha con 4 esquinas (A, B, C, D). Arrastra los puntos azules a los linderos reales.`, 'success', 3500);
     },
 
     _addPolyPoint(latlng) {
@@ -392,7 +556,7 @@ const ParcelasModule = {
     },
 
     _clearPolyPoints() {
-        var self = this;
+        const self = this;
         this._polyPoints = [];
         this._polyMarkers.forEach(function(m) { self._polyMap.removeLayer(m); });
         this._polyMarkers = [];
@@ -407,37 +571,42 @@ const ParcelasModule = {
 
         if (this._polyPoints.length < 2) return;
 
-        var latlngs = this._polyPoints.map(function(p) { return [p.lat, p.lng]; });
+        const latlngs = this._polyPoints.map(function(p) { return [p.lat, p.lng]; });
 
         if (this._polyPoints.length >= 3) {
             this._polyFill = L.polygon(latlngs, {
-                color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.2, weight: 2
+                color: '#22c55e',
+                fillColor: '#22c55e',
+                fillOpacity: 0.3,
+                weight: 3
             }).addTo(this._polyMap);
         } else {
             this._polyLine = L.polyline(latlngs, {
-                color: '#22c55e', weight: 2, dashArray: '6, 6'
+                color: '#22c55e',
+                weight: 3,
+                dashArray: '6, 6'
             }).addTo(this._polyMap);
         }
     },
 
     _updatePolyInfo() {
-        var n = this._polyPoints.length;
+        const n = this._polyPoints.length;
         document.getElementById('polyPointCount').textContent = n;
 
         if (n >= 3) {
-            var coords = this._polyPoints.map(function(p) { return { lat: p.lat, lng: p.lng }; });
-            var area = ExportService.polygonAreaM2(coords) / 10000;
-            var perim = ExportService.polygonPerimeter(coords);
+            const coords = this._polyPoints.map(function(p) { return { lat: p.lat, lng: p.lng }; });
+            const area = ExportService.polygonAreaM2(coords) / 10000;
+            const perim = ExportService.polygonPerimeter(coords);
             document.getElementById('polyArea').textContent = area.toFixed(4) + ' ha';
             document.getElementById('polyPerimeter').textContent = ExportService.formatDist(perim);
         } else {
-            document.getElementById('polyArea').textContent = '\u2014';
-            document.getElementById('polyPerimeter').textContent = '\u2014';
+            document.getElementById('polyArea').textContent = '—';
+            document.getElementById('polyPerimeter').textContent = '—';
         }
     },
 
     _updatePolyButtons() {
-        var n = this._polyPoints.length;
+        const n = this._polyPoints.length;
         document.getElementById('btnPolyUndo').disabled = n === 0;
         document.getElementById('btnPolyClear').disabled = n === 0;
         document.getElementById('btnPolySave').disabled = n < 3;
@@ -449,8 +618,8 @@ const ParcelasModule = {
         this._pendingPolygon = this._polyPoints.map(function(p) { return { lat: p.lat, lng: p.lng }; });
 
         // Auto-rellenar centro y área
-        var center = ExportService.centroid(this._pendingPolygon);
-        var areaHa = ExportService.polygonAreaM2(this._pendingPolygon) / 10000;
+        const center = ExportService.centroid(this._pendingPolygon);
+        const areaHa = ExportService.polygonAreaM2(this._pendingPolygon) / 10000;
 
         if (this._formState) {
             this._formState.lat = center.lat.toFixed(6);
@@ -473,6 +642,7 @@ const ParcelasModule = {
         this._polyMarkers = [];
         this._polyLine = null;
         this._polyFill = null;
+        this._refMarker = null;
 
         if (reopenForm) {
             Utils.openModal('modalParcela');
@@ -482,16 +652,16 @@ const ParcelasModule = {
     },
 
     _updatePolygonStatus() {
-        var el = document.getElementById('polygonStatus');
+        const el = document.getElementById('polygonStatus');
         if (!el) return;
 
         if (this._pendingPolygon && this._pendingPolygon.length >= 3) {
-            var area = ExportService.polygonAreaM2(this._pendingPolygon) / 10000;
+            const area = ExportService.polygonAreaM2(this._pendingPolygon) / 10000;
             el.className = 'polygon-status defined';
-            el.innerHTML = '\u2705 Perímetro definido \u2014 ' + this._pendingPolygon.length + ' puntos \u2022 ' + area.toFixed(4) + ' ha';
+            el.innerHTML = '✅ Perímetro definido — ' + this._pendingPolygon.length + ' puntos • ' + area.toFixed(4) + ' ha';
         } else {
             el.className = 'polygon-status undefined';
-            el.innerHTML = '\uD83D\uDCD0 Sin perímetro \u2014 toca el botón para dibujar';
+            el.innerHTML = '📐 Sin perímetro — toca "Trazar Perímetro"';
         }
     }
 };
