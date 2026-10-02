@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="css/bitacora.css">
     <link rel="stylesheet" href="css/sugerencias.css">
     <link rel="stylesheet" href="css/modals.css">
-    <link rel="stylesheet" href="css/polygon.css">
+    <link rel="stylesheet" href="css/polygon.css?v=3.1">
 </head>
 <body>
     <!-- Pantalla de carga -->
@@ -618,24 +618,34 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/weather.js"></script>
-    <script src="js/suggestions.js"></script>
-    <script src="js/maps.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/parcelas.js"></script>
-    <script src="js/calendario.js"></script>
-    <script src="js/bitacora.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/data.js?v=3.1"></script>
+    <script src="js/utils.js?v=3.1"></script>
+    <script src="js/weather.js?v=3.1"></script>
+    <script src="js/suggestions.js?v=3.1"></script>
+    <script src="js/maps.js?v=3.1"></script>
+    <script src="js/export.js?v=3.1"></script>
+    <script src="js/parcelas.js?v=3.1"></script>
+    <script src="js/calendario.js?v=3.1"></script>
+    <script src="js/bitacora.js?v=3.1"></script>
+    <script src="js/dashboard.js?v=3.1"></script>
+    <script src="js/app.js?v=3.1"></script>
 
-    <!-- Registrar Service Worker para funcionalidad offline -->
+    <!-- Limpiar caches anteriores de Carto y registrar Service Worker -->
     <script>
+        if ('caches' in window) {
+            caches.keys().then(keys => {
+                keys.forEach(k => {
+                    if (k !== 'agroapp-v6-sat') caches.delete(k);
+                });
+            });
+        }
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+                    .then(reg => {
+                        reg.update(); // Forzar actualización de ServiceWorker
+                        console.log('✅ Service Worker registrado:', reg.scope);
+                    })
                     .catch(err => console.log('❌ Error SW:', err));
             });
         }

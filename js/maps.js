@@ -7,18 +7,18 @@ const MapService = {
     maps: {},
     markers: {},
 
-    // Capa satélite sin API key (Esri World Imagery) - Cobertura global de alta definición
-    SAT_URL: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    SAT_ATTR: '&copy; Esri, Maxar, Earthstar Geographics',
+    // 1. Google Satélite Híbrido (Satélite + Carreteras + Pueblos - Sin API Key)
+    SAT_GOOGLE: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
 
-    // Capa de carreteras, nombres y límites superpuesta al satélite
-    LABELS_URL: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    // 2. Esri World Imagery (Satélite alternativo de alta resolución - Sin API Key)
+    SAT_ESRI: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    SAT_ESRI_ATTR: '&copy; Esri, Maxar, Earthstar Geographics',
 
     CORN_ICON: null,
 
     init() {
         this.CORN_ICON = L.divIcon({
-            html: '<div style="font-size:1.6rem;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.7))">🌽</div>',
+            html: '<div style="font-size:1.6rem;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.8))">🌽</div>',
             className: 'corn-marker',
             iconSize: [32, 32],
             iconAnchor: [16, 32],
@@ -27,6 +27,17 @@ const MapService = {
     },
 
     createMap(containerId, options = {}) {
+        const container = document.getElementById(containerId);
+        if (!container) return null;
+
+        if (this.maps[containerId]) {
+            try { this.maps[containerId].remove(); } catch (e) {}
+            delete this.maps[containerId];
+        }
+        if (container._leaflet_id) {
+            container._leaflet_id = null;
+        }
+
         const defaults = {
             center: [23.6345, -102.5528], // Centro de México
             zoom: 5,
@@ -37,20 +48,33 @@ const MapService = {
         const config = { ...defaults, ...options };
         const map = L.map(containerId, config);
 
-        // 1. Capa Satélite directa (base exclusiva)
-        L.tileLayer(this.SAT_URL, {
-            attribution: this.SAT_ATTR,
-            maxZoom: 19
+        // Capa satélite Google Híbrida como predeterminada (Satélite nítido + nombres en español)
+        const googleSat = L.tileLayer(this.SAT_GOOGLE, {
+            subdomains: ['0', '1', '2', '3'],
+            maxZoom: 20,
+            attribution: '&copy; Google Maps'
         }).addTo(map);
 
-        // 2. Capa de linderos, carreteras y poblados superpuesta
-        L.tileLayer(this.LABELS_URL, {
+        // Capa alternativa Esri Satélite
+        const esriSat = L.tileLayer(this.SAT_ESRI, {
             maxZoom: 19,
-            opacity: 0.85
-        }).addTo(map);
+            attribution: this.SAT_ESRI_ATTR
+        });
+
+        // Selector entre ambas vistas satelitales
+        L.control.layers(
+            { '🛰️ Google Satélite': googleSat, '🛰️ Esri Satélite': esriSat },
+            null,
+            { position: 'topright' }
+        ).addTo(map);
 
         this.maps[containerId] = map;
         this.markers[containerId] = [];
+
+        // Forzar recalibración de tamaño para que nunca quede gris o vacío
+        requestAnimationFrame(() => map.invalidateSize(true));
+        setTimeout(() => map.invalidateSize(true), 250);
+        setTimeout(() => map.invalidateSize(true), 600);
 
         return map;
     },
@@ -122,12 +146,14 @@ const MapService = {
                 map.fitBounds(bounds, { padding: [40, 40] });
             }
         }
+
+        map.invalidateSize(true);
     },
 
     invalidateSize(containerId) {
         const map = this.maps[containerId];
         if (map) {
-            setTimeout(() => map.invalidateSize(), 100);
+            setTimeout(() => map.invalidateSize(true), 100);
         }
     },
 

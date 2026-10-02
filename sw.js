@@ -4,7 +4,7 @@
    Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v4';
+const CACHE_NAME = 'agroapp-v6-sat';
 
 // Detectar la base path automáticamente
 const BASE_PATH = self.registration.scope;
@@ -14,7 +14,6 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                // Cachear la página principal usando ruta relativa
                 return cache.addAll([
                     BASE_PATH,
                     BASE_PATH + 'index.html'
@@ -24,7 +23,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activar: limpiar caches viejos
+// Activar: limpiar absolutamente todos los caches anteriores
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then(keys =>
@@ -38,11 +37,19 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: network first para todo, con fallback a cache
 self.addEventListener('fetch', (event) => {
+    const url = event.request.url;
+
+    // Descartar peticiones obsoletas de Carto
+    if (url.includes('cartocdn.com') || url.includes('carto.com')) {
+        event.respondWith(new Response('', { status: 404 }));
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                // Guardar copia en cache
-                if (response.ok) {
+                // Guardar copia en cache sólo para archivos locales (no para tiles externos)
+                if (response.ok && !url.includes('google.com/vt') && !url.includes('arcgisonline.com')) {
                     const clone = response.clone();
                     caches.open(CACHE_NAME).then(cache => {
                         cache.put(event.request, clone);
@@ -54,7 +61,6 @@ self.addEventListener('fetch', (event) => {
                 // Sin internet: servir desde cache
                 return caches.match(event.request).then(cached => {
                     if (cached) return cached;
-                    // Si es una navegación, devolver la página principal
                     if (event.request.mode === 'navigate') {
                         return caches.match(BASE_PATH + 'index.html');
                     }

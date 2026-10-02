@@ -1,6 +1,6 @@
 /* ========================================
    AgroApp — Módulo de Parcelas
-   Con soporte para satélite, ubicación de terreno,
+   Con soporte para satélite Google/Esri, ubicación de terreno,
    cuadre de hectáreas y exportación de croquis
    ======================================== */
 
@@ -66,6 +66,13 @@ const ParcelasModule = {
         polyOverlay.addEventListener('click', (e) => {
             if (e.target === polyOverlay) {
                 this._closePolygonModal(true);
+            }
+        });
+
+        // Evento de resize de ventana para recalibrar mapa
+        window.addEventListener('resize', () => {
+            if (this._polyMap) {
+                this._polyMap.invalidateSize(true);
             }
         });
 
@@ -269,7 +276,18 @@ const ParcelasModule = {
         Utils.closeModal('modalParcela');
         Utils.openModal('modalPolygon');
 
-        setTimeout(() => this._initPolyMap(), 300);
+        // Inicializar mapa de inmediato y asegurar recalibración de tamaño con la animación del modal
+        setTimeout(() => {
+            this._initPolyMap();
+        }, 150);
+
+        setTimeout(() => {
+            if (this._polyMap) this._polyMap.invalidateSize(true);
+        }, 400);
+
+        setTimeout(() => {
+            if (this._polyMap) this._polyMap.invalidateSize(true);
+        }, 800);
     },
 
     _saveFormState() {
@@ -304,9 +322,17 @@ const ParcelasModule = {
     },
 
     _initPolyMap() {
+        const container = document.getElementById('polygonDrawMap');
+        if (!container) return;
+
+        // Limpiar instancia previa de forma segura
         if (this._polyMap) {
-            this._polyMap.remove();
+            try { this._polyMap.remove(); } catch (e) {}
             this._polyMap = null;
+        }
+
+        if (container._leaflet_id) {
+            container._leaflet_id = null;
         }
 
         // Centro inicial
@@ -321,25 +347,38 @@ const ParcelasModule = {
             zoom = 17;
         }
 
-        this._polyMap = L.map('polygonDrawMap', { center: center, zoom: zoom, zoomControl: true });
+        this._polyMap = L.map('polygonDrawMap', {
+            center: center,
+            zoom: zoom,
+            zoomControl: true,
+            attributionControl: false
+        });
 
-        // Capa Satélite pura con carreteras y poblados superpuestos (EXCLUSIVA)
-        L.tileLayer(MapService.SAT_URL, {
-            attribution: MapService.SAT_ATTR,
-            maxZoom: 19
+        // Capa Satélite Google Híbrida como predeterminada (Satélite + Carreteras y Poblados)
+        const googleSat = L.tileLayer(MapService.SAT_GOOGLE, {
+            subdomains: ['0', '1', '2', '3'],
+            maxZoom: 20,
+            attribution: '&copy; Google'
         }).addTo(this._polyMap);
 
-        L.tileLayer(MapService.LABELS_URL, {
+        // Capa alternativa Esri Satélite
+        const esriSat = L.tileLayer(MapService.SAT_ESRI, {
             maxZoom: 19,
-            opacity: 0.85
-        }).addTo(this._polyMap);
+            attribution: MapService.SAT_ESRI_ATTR
+        });
+
+        L.control.layers(
+            { '🛰️ Google Satélite': googleSat, '🛰️ Esri Satélite': esriSat },
+            null,
+            { position: 'topright' }
+        ).addTo(this._polyMap);
 
         // Botón GPS en el mapa
         const self = this;
         const GpsControl = L.Control.extend({
             onAdd: function() {
                 const btn = L.DomUtil.create('div', 'leaflet-bar');
-                btn.innerHTML = '<a href="#" title="Mi ubicación GPS" style="font-size:18px;line-height:30px;text-align:center;display:block;width:30px;height:30px">📍</a>';
+                btn.innerHTML = '<a href="#" title="Mi ubicación GPS" style="font-size:18px;line-height:30px;text-align:center;display:block;width:30px;height:30px;background:#ffffff;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.3)">📍</a>';
                 L.DomEvent.on(btn, 'click', function(e) {
                     L.DomEvent.preventDefault(e);
                     L.DomEvent.stopPropagation(e);
@@ -398,6 +437,14 @@ const ParcelasModule = {
 
         this._updatePolyInfo();
         this._updatePolyButtons();
+
+        // Forzar recalibración de tamaño para renderizado completo
+        requestAnimationFrame(() => {
+            if (self._polyMap) self._polyMap.invalidateSize(true);
+        });
+        setTimeout(() => {
+            if (self._polyMap) self._polyMap.invalidateSize(true);
+        }, 250);
     },
 
     // Marcar punto de terreno mediante coordenadas
@@ -445,6 +492,7 @@ const ParcelasModule = {
         });
 
         this._polyMap.setView([lat, lng], 17);
+        if (this._polyMap) this._polyMap.invalidateSize(true);
 
         if (!silent) {
             Utils.showToast(`📍 Terreno ubicado en ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'success');
@@ -511,6 +559,7 @@ const ParcelasModule = {
 
         // Ajustar vista para abarcar el cuadrado
         this._polyMap.fitBounds(corners.map(c => [c.lat, c.lng]), { padding: [60, 60] });
+        if (this._polyMap) this._polyMap.invalidateSize(true);
 
         Utils.showToast(`✅ Cuadradas ${ha} ha con 4 esquinas (A, B, C, D). Arrastra los puntos azules a los linderos reales.`, 'success', 3500);
     },
@@ -635,7 +684,7 @@ const ParcelasModule = {
         Utils.closeModal('modalPolygon');
 
         if (this._polyMap) {
-            this._polyMap.remove();
+            try { this._polyMap.remove(); } catch (e) {}
             this._polyMap = null;
         }
         this._polyPoints = [];
