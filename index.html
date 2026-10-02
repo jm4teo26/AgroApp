@@ -618,24 +618,24 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/data.js?v=3.5"></script>
-    <script src="js/utils.js?v=3.5"></script>
-    <script src="js/weather.js?v=3.5"></script>
-    <script src="js/suggestions.js?v=3.5"></script>
-    <script src="js/maps.js?v=3.5"></script>
-    <script src="js/export.js?v=3.5"></script>
-    <script src="js/parcelas.js?v=3.5"></script>
-    <script src="js/calendario.js?v=3.5"></script>
-    <script src="js/bitacora.js?v=3.5"></script>
-    <script src="js/dashboard.js?v=3.5"></script>
-    <script src="js/app.js?v=3.5"></script>
+    <script src="js/data.js?v=3.6"></script>
+    <script src="js/utils.js?v=3.6"></script>
+    <script src="js/weather.js?v=3.6"></script>
+    <script src="js/suggestions.js?v=3.6"></script>
+    <script src="js/maps.js?v=3.6"></script>
+    <script src="js/export.js?v=3.6"></script>
+    <script src="js/parcelas.js?v=3.6"></script>
+    <script src="js/calendario.js?v=3.6"></script>
+    <script src="js/bitacora.js?v=3.6"></script>
+    <script src="js/dashboard.js?v=3.6"></script>
+    <script src="js/app.js?v=3.6"></script>
 
     <!-- Limpiar caches anteriores y registrar Service Worker -->
     <script>
         if ('caches' in window) {
             caches.keys().then(keys => {
                 keys.forEach(k => {
-                    if (k !== 'agroapp-v11-perf') caches.delete(k);
+                    if (k !== 'agroapp-v12-sat') caches.delete(k);
                 });
             });
         }

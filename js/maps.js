@@ -7,12 +7,8 @@ var MapService = window.MapService = {
     maps: {},
     markers: {},
 
-    // 1. Google Satélite Híbrido (Satélite + Carreteras + Pueblos - Sin API Key, 4 subdominios paralelos)
-    SAT_GOOGLE: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-
-    // 2. Esri World Imagery (Satélite alternativo de alta resolución - Sin API Key)
-    SAT_ESRI: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    SAT_ESRI_ATTR: '&copy; Esri, Maxar, Earthstar Geographics',
+    // Google Satélite Limpio (Satélite natural de alta definición, sin nombres de calles ni carreteras)
+    SAT_GOOGLE: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
 
     CORN_ICON: null,
 
@@ -72,8 +68,8 @@ var MapService = window.MapService = {
         const config = { ...defaults, ...options };
         const map = L.map(containerId, config);
 
-        // Capa satélite Google Híbrida ultra-rápida (con buffer extendido y 4 subdominios paralelos)
-        const googleSat = L.tileLayer(this.SAT_GOOGLE, {
+        // Capa satélite Google Limpia (sin nombres de calles ni carreteras, pura imagen satelital)
+        L.tileLayer(this.SAT_GOOGLE, {
             subdomains: ['0', '1', '2', '3'],
             maxZoom: 20,
             maxNativeZoom: 19,
@@ -82,20 +78,6 @@ var MapService = window.MapService = {
             updateWhenZooming: true,
             attribution: '&copy; Google Maps'
         }).addTo(map);
-
-        // Capa alternativa Esri Satélite
-        const esriSat = L.tileLayer(this.SAT_ESRI, {
-            maxZoom: 19,
-            keepBuffer: 6,
-            attribution: this.SAT_ESRI_ATTR
-        });
-
-        // Selector entre ambas vistas satelitales
-        L.control.layers(
-            { '🛰️ Google Satélite': googleSat, '🛰️ Esri Satélite': esriSat },
-            null,
-            { position: 'topright' }
-        ).addTo(map);
 
         this.maps[containerId] = map;
         this.markers[containerId] = [];
@@ -125,7 +107,7 @@ var MapService = window.MapService = {
         parcelas.forEach(p => {
             const hasPolygon = p.polygon && p.polygon.length >= 3;
             const popupContent = `
-                <div style="font-family:Inter,sans-serif;min-width:160px;padding:4px">
+                <div style="font-family:Inter,sans-serif;min-width:170px;padding:4px">
                     <strong style="font-size:14px;color:#0f172a">${p.nombre}</strong><br>
                     <span style="color:#16a34a;font-size:12px;font-weight:700">🌽 ${Utils.cultivoName(p.cultivo)}</span><br>
                     <span style="font-size:11px;color:#475569">

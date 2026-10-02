@@ -227,7 +227,7 @@ const ParcelasModule = {
                 ? '<div class="parcela-polygon-info">📐 ' + p.polygon.length + ' vértices • Perímetro trazado</div>'
                 : '';
             const exportBtn = hasPolygon
-                ? '<button class="parcela-action-btn export" onclick="ExportService.downloadCroquis(DB.getParcelaById(\'' + p.id + '\'))" aria-label="Croquis" title="Descargar croquis">📄</button>'
+                ? '<button class="parcela-action-btn export" onclick="ExportService.downloadCroquis(DB.getParcelaById(\'' + p.id + '\'))" aria-label="Croquis" title="Descargar croquis (PNG)">📄</button>'
                 : '';
 
             return '<div class="parcela-card" style="animation-delay:' + (i * 0.05) + 's">' +
@@ -354,24 +354,16 @@ const ParcelasModule = {
             attributionControl: false
         });
 
-        // Capa Satélite Google Híbrida como predeterminada (Satélite + Carreteras y Poblados)
-        const googleSat = L.tileLayer(MapService.SAT_GOOGLE, {
+        // Capa Satélite Google Limpia (sin nombres de calles ni carreteras, pura imagen satelital)
+        L.tileLayer(MapService.SAT_GOOGLE, {
             subdomains: ['0', '1', '2', '3'],
             maxZoom: 20,
+            maxNativeZoom: 19,
+            keepBuffer: 6,
+            updateWhenIdle: false,
+            updateWhenZooming: true,
             attribution: '&copy; Google'
         }).addTo(this._polyMap);
-
-        // Capa alternativa Esri Satélite
-        const esriSat = L.tileLayer(MapService.SAT_ESRI, {
-            maxZoom: 19,
-            attribution: MapService.SAT_ESRI_ATTR
-        });
-
-        L.control.layers(
-            { '🛰️ Google Satélite': googleSat, '🛰️ Esri Satélite': esriSat },
-            null,
-            { position: 'topright' }
-        ).addTo(this._polyMap);
 
         // Botón GPS en el mapa
         const self = this;
