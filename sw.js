@@ -4,7 +4,7 @@
    Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v8-weather-fix';
+const CACHE_NAME = 'agroapp-v10-wifi';
 
 // Detectar la base path automáticamente
 const BASE_PATH = self.registration.scope;
@@ -35,7 +35,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch: network first para todo, con fallback a cache
+// Fetch: solo interceptar recursos locales de la app
 self.addEventListener('fetch', (event) => {
     const url = event.request.url;
 
@@ -45,11 +45,16 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // NUNCA interceptar APIs externas ni mapas (Open-Meteo, Google Tiles, Esri)
+    // El navegador se conecta de forma directa y nativa vía Wi-Fi o datos móviles
+    if (!url.startsWith(self.location.origin)) {
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                // Guardar copia en cache sólo para archivos locales (no para tiles externos)
-                if (response.ok && !url.includes('google.com/vt') && !url.includes('arcgisonline.com')) {
+                if (response.ok) {
                     const clone = response.clone();
                     caches.open(CACHE_NAME).then(cache => {
                         cache.put(event.request, clone);
@@ -58,7 +63,7 @@ self.addEventListener('fetch', (event) => {
                 return response;
             })
             .catch(() => {
-                // Sin internet: servir desde cache
+                // Sin internet: servir recursos locales desde cache
                 return caches.match(event.request).then(cached => {
                     if (cached) return cached;
                     if (event.request.mode === 'navigate') {

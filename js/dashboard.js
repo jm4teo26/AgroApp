@@ -92,13 +92,12 @@ const DashboardModule = {
             const current = weather.current;
             const icon = Utils.weatherIcon(current.weather_code);
             const desc = Utils.weatherDesc(current.weather_code);
-            const note = weather.isFallback ? ' <small style="opacity:0.6">(Estimado sin red)</small>' : '';
 
             container.innerHTML = `
                 <div class="weather-main">
                     <div>
                         <div class="weather-temp">${Math.round(current.temperature_2m)}°C</div>
-                        <div class="weather-desc">${desc} • ${p.nombre}${note}</div>
+                        <div class="weather-desc">${desc} • ${p.nombre}</div>
                     </div>
                     <div class="weather-icon-big">${icon}</div>
                 </div>

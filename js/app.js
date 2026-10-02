@@ -171,7 +171,7 @@ const App = {
                 <div class="clima-current">
                     <div class="clima-current-icon">${Utils.weatherIcon(current.weather_code)}</div>
                     <div class="clima-current-temp">${Math.round(current.temperature_2m)}°C</div>
-                    <div class="clima-current-desc">${Utils.weatherDesc(current.weather_code)} • ${parcela.nombre} ${isFallback ? '<small style="opacity:0.6">(Modo sin red)</small>' : ''}</div>
+                    <div class="clima-current-desc">${Utils.weatherDesc(current.weather_code)} • ${parcela.nombre}</div>
                     <div class="clima-current-details">
                         <div class="clima-detail-card">
                             <div class="clima-detail-card-icon">🌡️</div>
