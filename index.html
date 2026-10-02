@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="css/bitacora.css">
     <link rel="stylesheet" href="css/sugerencias.css">
     <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/polygon.css">
 </head>
 <body>
     <!-- Pantalla de carga -->
@@ -292,18 +293,26 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Latitud *</label>
-                        <input type="number" step="any" id="parcelaLat" class="input" placeholder="20.6597" required>
+                        <label>Latitud</label>
+                        <input type="number" step="any" id="parcelaLat" class="input" placeholder="20.6597">
                     </div>
                     <div class="form-group">
-                        <label>Longitud *</label>
-                        <input type="number" step="any" id="parcelaLng" class="input" placeholder="-103.3496" required>
+                        <label>Longitud</label>
+                        <input type="number" step="any" id="parcelaLng" class="input" placeholder="-103.3496">
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary btn-block" id="btnGetLocation">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
-                    Usar mi ubicación actual
-                </button>
+                <div style="display:flex;gap:8px;margin-bottom:8px">
+                    <button type="button" class="btn btn-secondary" id="btnGetLocation" style="flex:1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                        GPS
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnDrawPolygon" style="flex:2">
+                        📐 Trazar Perímetro
+                    </button>
+                </div>
+                <div id="polygonStatus" class="polygon-status undefined">
+                    📐 Sin perímetro — toca "Trazar Perímetro"
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Superficie (ha)</label>
@@ -357,6 +366,41 @@
                     <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Trazar Polígono / Perímetro en Mapa -->
+    <div class="modal-overlay" id="modalPolygon">
+        <div class="modal modal-fullscreen">
+            <div class="modal-header">
+                <h3>📐 Trazar Perímetro de Parcela</h3>
+                <button class="modal-close-btn" id="btnPolygonClose" type="button">✕</button>
+            </div>
+            <div class="polygon-draw-area">
+                <div class="polygon-instructions">
+                    💡 Toca el mapa satelital para colocar esquinas (mínimo 3). Puedes arrastrar cualquier esquina para corregir la posición.
+                </div>
+                <div id="polygonDrawMap" class="polygon-draw-map"></div>
+                <div class="polygon-info-bar">
+                    <div class="polygon-info-item">
+                        <span class="polygon-info-value" id="polyPointCount">0</span>
+                        <span class="polygon-info-label">Vértices</span>
+                    </div>
+                    <div class="polygon-info-item">
+                        <span class="polygon-info-value" id="polyArea">—</span>
+                        <span class="polygon-info-label">Superficie</span>
+                    </div>
+                    <div class="polygon-info-item">
+                        <span class="polygon-info-value" id="polyPerimeter">—</span>
+                        <span class="polygon-info-label">Perímetro</span>
+                    </div>
+                </div>
+                <div class="polygon-draw-actions">
+                    <button type="button" class="btn btn-secondary" id="btnPolyUndo" disabled>↩ Deshacer</button>
+                    <button type="button" class="btn btn-secondary" id="btnPolyClear" disabled>🗑 Limpiar</button>
+                    <button type="button" class="btn btn-primary" id="btnPolySave" disabled>💾 Guardar Perímetro</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -553,6 +597,7 @@
     <script src="js/weather.js"></script>
     <script src="js/suggestions.js"></script>
     <script src="js/maps.js"></script>
+    <script src="js/export.js"></script>
     <script src="js/parcelas.js"></script>
     <script src="js/calendario.js"></script>
     <script src="js/bitacora.js"></script>
