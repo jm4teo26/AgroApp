@@ -1,13 +1,13 @@
 /* ========================================
    AgroApp — Servicio de mapas (Leaflet)
-   Capa Satelital Exclusiva de Alta Definición
+   Capa Satelital Exclusiva de Alta Definición Ultra-Rápida
    ======================================== */
 
-const MapService = {
+var MapService = window.MapService = {
     maps: {},
     markers: {},
 
-    // 1. Google Satélite Híbrido (Satélite + Carreteras + Pueblos - Sin API Key)
+    // 1. Google Satélite Híbrido (Satélite + Carreteras + Pueblos - Sin API Key, 4 subdominios paralelos)
     SAT_GOOGLE: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
 
     // 2. Esri World Imagery (Satélite alternativo de alta resolución - Sin API Key)
@@ -38,26 +38,55 @@ const MapService = {
             container._leaflet_id = null;
         }
 
+        // Calcular centro óptimo según parcelas existentes para evitar saltos y recargas de zoom
+        const parcelas = DB.getParcelas();
+        let center = [23.6345, -102.5528];
+        let zoom = 5;
+
+        if (parcelas.length > 0) {
+            for (const p of parcelas) {
+                if (!isNaN(p.lat) && !isNaN(p.lng) && p.lat !== 0 && p.lng !== 0) {
+                    center = [parseFloat(p.lat), parseFloat(p.lng)];
+                    zoom = 15;
+                    break;
+                }
+                if (p.polygon && p.polygon.length >= 3 && typeof ExportService !== 'undefined') {
+                    const c = ExportService.centroid(p.polygon);
+                    if (c && !isNaN(c.lat) && !isNaN(c.lng)) {
+                        center = [c.lat, c.lng];
+                        zoom = 15;
+                        break;
+                    }
+                }
+            }
+        }
+
         const defaults = {
-            center: [23.6345, -102.5528], // Centro de México
-            zoom: 5,
+            center: center,
+            zoom: zoom,
             zoomControl: true,
-            attributionControl: false
+            attributionControl: false,
+            preferCanvas: true // Renderizado por GPU ultra veloz
         };
 
         const config = { ...defaults, ...options };
         const map = L.map(containerId, config);
 
-        // Capa satélite Google Híbrida como predeterminada (Satélite nítido + nombres en español)
+        // Capa satélite Google Híbrida ultra-rápida (con buffer extendido y 4 subdominios paralelos)
         const googleSat = L.tileLayer(this.SAT_GOOGLE, {
             subdomains: ['0', '1', '2', '3'],
             maxZoom: 20,
+            maxNativeZoom: 19,
+            keepBuffer: 6,
+            updateWhenIdle: false,
+            updateWhenZooming: true,
             attribution: '&copy; Google Maps'
         }).addTo(map);
 
         // Capa alternativa Esri Satélite
         const esriSat = L.tileLayer(this.SAT_ESRI, {
             maxZoom: 19,
+            keepBuffer: 6,
             attribution: this.SAT_ESRI_ATTR
         });
 
@@ -71,10 +100,9 @@ const MapService = {
         this.maps[containerId] = map;
         this.markers[containerId] = [];
 
-        // Forzar recalibración de tamaño para que nunca quede gris o vacío
+        // Forzar calibración de tamaño inmediata
         requestAnimationFrame(() => map.invalidateSize(true));
-        setTimeout(() => map.invalidateSize(true), 250);
-        setTimeout(() => map.invalidateSize(true), 600);
+        setTimeout(() => map.invalidateSize(true), 200);
 
         return map;
     },
@@ -129,7 +157,7 @@ const MapService = {
             }
 
             // Marcador con ícono de maíz en el centro/posición
-            if (!isNaN(p.lat) && !isNaN(p.lng)) {
+            if (!isNaN(p.lat) && !isNaN(p.lng) && p.lat !== 0 && p.lng !== 0) {
                 const marker = L.marker([p.lat, p.lng], { icon: this.CORN_ICON })
                     .addTo(map)
                     .bindPopup(popupContent);
@@ -141,19 +169,19 @@ const MapService = {
 
         if (bounds.length > 0) {
             if (bounds.length === 1) {
-                map.setView(bounds[0], 15);
+                map.setView(bounds[0], 15, { animate: false });
             } else {
-                map.fitBounds(bounds, { padding: [40, 40] });
+                map.fitBounds(bounds, { padding: [40, 40], animate: false });
             }
         }
 
-        map.invalidateSize(true);
+        requestAnimationFrame(() => map.invalidateSize(true));
     },
 
     invalidateSize(containerId) {
         const map = this.maps[containerId];
         if (map) {
-            setTimeout(() => map.invalidateSize(true), 100);
+            requestAnimationFrame(() => map.invalidateSize(true));
         }
     },
 

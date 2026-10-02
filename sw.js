@@ -4,7 +4,7 @@
    Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v10-wifi';
+const CACHE_NAME = 'agroapp-v11-perf';
 
 // Detectar la base path automáticamente
 const BASE_PATH = self.registration.scope;

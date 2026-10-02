@@ -7,7 +7,9 @@ const App = {
 
     init() {
         // Inicializar servicios
-        MapService.init();
+        if (typeof MapService !== 'undefined' && MapService.init) {
+            MapService.init();
+        }
 
         // Navegación inferior
         document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -54,8 +56,18 @@ const App = {
 
         // Inicializar mapas después de un frame
         requestAnimationFrame(() => {
-            MapService.createMap('dashboardMap', { zoomControl: false, zoom: 5 });
-            MapService.updateMarkers('dashboardMap');
+            if (typeof MapService !== 'undefined') {
+                MapService.createMap('dashboardMap', { zoomControl: false });
+                MapService.updateMarkers('dashboardMap');
+
+                // Pre-calentar mapa de parcelas en segundo plano para carga inmediata
+                setTimeout(() => {
+                    if (!MapService.maps['parcelasMap']) {
+                        MapService.createMap('parcelasMap');
+                        MapService.updateMarkers('parcelasMap');
+                    }
+                }, 300);
+            }
         });
 
         // Ocultar splash
@@ -97,13 +109,15 @@ const App = {
 
         // Acciones específicas por página
         if (page === 'parcelas') {
-            setTimeout(() => {
-                if (!MapService.maps['parcelasMap']) {
-                    MapService.createMap('parcelasMap');
+            requestAnimationFrame(() => {
+                if (typeof MapService !== 'undefined') {
+                    if (!MapService.maps['parcelasMap']) {
+                        MapService.createMap('parcelasMap');
+                    }
+                    MapService.updateMarkers('parcelasMap');
+                    MapService.invalidateSize('parcelasMap');
                 }
-                MapService.updateMarkers('parcelasMap');
-                MapService.invalidateSize('parcelasMap');
-            }, 100);
+            });
         }
 
         if (page === 'calendario') {
@@ -134,8 +148,10 @@ const App = {
         }
 
         if (page === 'dashboard') {
-            MapService.invalidateSize('dashboardMap');
-            MapService.updateMarkers('dashboardMap');
+            if (typeof MapService !== 'undefined') {
+                MapService.invalidateSize('dashboardMap');
+                MapService.updateMarkers('dashboardMap');
+            }
             DashboardModule.refresh();
         }
     },

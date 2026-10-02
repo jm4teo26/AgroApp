@@ -222,12 +222,14 @@
     width: 100%;
     height: 250px;
     border-radius: var(--radius-lg);
+    background: #0f172a;
 }
 
 .mini-map {
     width: 100%;
     height: 180px;
     border-radius: var(--radius-md);
+    background: #0f172a;
 }
 
 /* Leaflet overrides para dark mode */
