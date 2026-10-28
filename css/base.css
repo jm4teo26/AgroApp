@@ -55,6 +55,65 @@ img {
     outline-offset: 2px;
 }
 
+/* Login Screen */
+.login-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 35%), var(--bg-primary);
+    padding: var(--space-xl);
+}
+
+.login-screen.active {
+    display: flex;
+}
+
+.login-card {
+    width: min(100%, 420px);
+    padding: var(--space-2xl) var(--space-xl);
+    border: 1px solid var(--border-default);
+    border-radius: 24px;
+    background: rgba(12, 20, 15, 0.82);
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    text-align: center;
+}
+
+.login-logo {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+}
+
+.login-card h1 {
+    font-size: var(--fs-3xl);
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.login-card p {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+}
+
+.login-form {
+    text-align: left;
+}
+
+.login-error {
+    min-height: 20px;
+    color: #fca5a5;
+    font-size: var(--fs-sm);
+    margin: 0 0 var(--space-md);
+}
+
 /* Splash Screen */
 .splash-screen {
     position: fixed;

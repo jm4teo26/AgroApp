@@ -4,8 +4,66 @@
 
 const App = {
     currentPage: 'dashboard',
+    AUTH_KEY: 'agroapp_logged_in',
+
+    isAuthenticated() {
+        try {
+            return localStorage.getItem(this.AUTH_KEY) === 'true';
+        } catch (error) {
+            return false;
+        }
+    },
+
+    setAuthenticated(value) {
+        try {
+            localStorage.setItem(this.AUTH_KEY, value ? 'true' : 'false');
+        } catch (error) {
+            // Ignorar si el navegador bloquea localStorage
+        }
+    },
 
     init() {
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const loginScreen = document.getElementById('loginScreen');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const usuario = document.getElementById('loginUsuario').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+
+                if (usuario.toLowerCase() === 'admin' && password === '123') {
+                    this.setAuthenticated(true);
+                    loginError.textContent = '';
+                    if (loginScreen) loginScreen.classList.remove('active');
+                    document.getElementById('appContainer').classList.remove('hidden');
+                    this.startApp();
+                    return;
+                }
+
+                loginError.textContent = 'Usuario o contraseña incorrectos.';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginPassword').focus();
+            });
+        }
+
+        if (!this.isAuthenticated()) {
+            const appContainer = document.getElementById('appContainer');
+            if (appContainer) appContainer.classList.add('hidden');
+            if (loginScreen) loginScreen.classList.add('active');
+            return;
+        }
+
+        this.startApp();
+    },
+
+    startApp() {
+        const appContainer = document.getElementById('appContainer');
+        const loginScreen = document.getElementById('loginScreen');
+        if (appContainer) appContainer.classList.remove('hidden');
+        if (loginScreen) loginScreen.classList.remove('active');
+
         // Inicializar servicios
         if (typeof MapService !== 'undefined' && MapService.init) {
             MapService.init();
@@ -39,14 +97,20 @@ const App = {
         });
 
         // Clima: select parcela
-        document.getElementById('climaParcelaSelect').addEventListener('change', (e) => {
-            if (e.target.value) this.loadClima(e.target.value);
-        });
+        const climaSelect = document.getElementById('climaParcelaSelect');
+        if (climaSelect) {
+            climaSelect.addEventListener('change', (e) => {
+                if (e.target.value) this.loadClima(e.target.value);
+            });
+        }
 
         // Sugerencias: refresh
-        document.getElementById('btnRefreshSugg').addEventListener('click', () => {
-            this.loadSugerencias();
-        });
+        const btnRefreshSugg = document.getElementById('btnRefreshSugg');
+        if (btnRefreshSugg) {
+            btnRefreshSugg.addEventListener('click', () => {
+                this.loadSugerencias();
+            });
+        }
 
         // Poblar selects
         Utils.updateParcelaSelects();
@@ -75,7 +139,8 @@ const App = {
 
         // Ocultar splash
         setTimeout(() => {
-            document.getElementById('splashScreen').classList.add('hidden');
+            const splashScreen = document.getElementById('splashScreen');
+            if (splashScreen) splashScreen.classList.add('hidden');
         }, 1200);
     },
 

@@ -44,6 +44,26 @@
     <link rel="stylesheet" href="css/certificados.css?v=3.7">
 </head>
 <body>
+    <div class="login-screen active" id="loginScreen" aria-live="polite">
+        <div class="login-card">
+            <div class="login-logo">🌽</div>
+            <h1>AgroApp</h1>
+            <p>Inicia sesión para continuar</p>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginUsuario">Usuario</label>
+                    <input type="text" id="loginUsuario" class="input" autocomplete="username" placeholder="Admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" class="input" autocomplete="current-password" placeholder="123" required>
+                </div>
+                <div id="loginError" class="login-error" role="alert"></div>
+                <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Pantalla de carga -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">

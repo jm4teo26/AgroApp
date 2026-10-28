@@ -12,6 +12,10 @@
     overflow: hidden;
 }
 
+.app-container.hidden {
+    display: none;
+}
+
 /* === HEADER === */
 .app-header {
     display: flex;
