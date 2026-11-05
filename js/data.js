@@ -49,7 +49,13 @@ const DB = {
     },
 
     async signUp(email, password) {
-        const { data, error } = await this.supabase.auth.signUp({ email, password });
+        const { data, error } = await this.supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: window.SUPABASE_CONFIG.redirectTo
+            }
+        });
         if (error) throw error;
         if (data.session) await this.initializeUserData(data.user.id);
         return Boolean(data.session);
