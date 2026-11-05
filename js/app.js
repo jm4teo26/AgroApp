@@ -22,40 +22,99 @@ const App = {
         }
     },
 
-    init() {
+    async init() {
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('loginError');
         const loginScreen = document.getElementById('loginScreen');
+        const loginUsuario = document.getElementById('loginUsuario');
+        const loginSignup = document.getElementById('loginSignup');
+        let supabaseConfigured = false;
+        let supabaseSetupRequired = false;
 
         if (loginForm) {
-            loginForm.addEventListener('submit', (event) => {
+            loginForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
-                const usuario = document.getElementById('loginUsuario').value.trim();
+                const usuario = loginUsuario.value.trim();
                 const password = document.getElementById('loginPassword').value.trim();
 
-                if (usuario.toLowerCase() === 'admin' && password === '123') {
-                    this.setAuthenticated(true);
+                if (supabaseSetupRequired && !supabaseConfigured) {
+                    loginError.textContent = 'Completa la configuración de Supabase antes de iniciar sesión.';
+                    return;
+                }
+
+                try {
+                    if (supabaseConfigured) {
+                        await DB.signIn(usuario, password);
+                    } else if (usuario.toLowerCase() === 'admin' && password === '123') {
+                        this.setAuthenticated(true);
+                    } else {
+                        throw new Error('Usuario o contraseña incorrectos.');
+                    }
+
                     loginError.textContent = '';
+                    if (loginScreen) loginScreen.classList.remove('active');
+                    document.getElementById('appContainer').classList.remove('hidden');
+                    this.startApp();
+                } catch (error) {
+                    loginError.textContent = this.authErrorMessage(error);
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginPassword').focus();
+                }
+            });
+        }
+
+        if (loginSignup) {
+            loginSignup.addEventListener('click', async () => {
+                if (!supabaseConfigured) return;
+                if (!loginForm.reportValidity()) return;
+                loginError.textContent = '';
+                try {
+                    const hasSession = await DB.signUp(loginUsuario.value.trim(), document.getElementById('loginPassword').value);
+                    if (hasSession) {
+                        if (loginScreen) loginScreen.classList.remove('active');
+                        document.getElementById('appContainer').classList.remove('hidden');
+                        this.startApp();
+                    } else {
+                        loginError.textContent = 'Cuenta creada. Confirma tu correo y después inicia sesión.';
+                    }
+                } catch (error) {
+                    loginError.textContent = this.authErrorMessage(error);
+                }
+            });
+        }
+
+        try {
+            supabaseConfigured = DB.initializeSupabase();
+            supabaseSetupRequired = Boolean(window.SUPABASE_CONFIG?.url || window.SUPABASE_CONFIG?.anonKey);
+            if (supabaseConfigured) {
+                loginUsuario.type = 'email';
+                loginUsuario.autocomplete = 'email';
+                document.getElementById('loginSignup').classList.remove('hidden');
+                if (await DB.restoreSession()) {
                     if (loginScreen) loginScreen.classList.remove('active');
                     document.getElementById('appContainer').classList.remove('hidden');
                     this.startApp();
                     return;
                 }
-
-                loginError.textContent = 'Usuario o contraseña incorrectos.';
-                document.getElementById('loginPassword').value = '';
-                document.getElementById('loginPassword').focus();
-            });
+            }
+        } catch (error) {
+            supabaseSetupRequired = true;
+            loginError.textContent = this.authErrorMessage(error);
         }
 
-        if (!this.isAuthenticated()) {
-            const appContainer = document.getElementById('appContainer');
-            if (appContainer) appContainer.classList.add('hidden');
-            if (loginScreen) loginScreen.classList.add('active');
+        if (!supabaseConfigured && this.isAuthenticated() && !supabaseSetupRequired) {
+            this.startApp();
             return;
         }
 
-        this.startApp();
+        const appContainer = document.getElementById('appContainer');
+        if (appContainer) appContainer.classList.add('hidden');
+        if (loginScreen) loginScreen.classList.add('active');
+    },
+
+    authErrorMessage(error) {
+        if (error && error.message) return error.message;
+        return 'No se pudo completar el acceso. Inténtalo de nuevo.';
     },
 
     startApp() {
@@ -78,6 +137,21 @@ const App = {
                 this.navigate(tab.dataset.page);
             });
         });
+
+        const signOutButton = document.getElementById('btnSignOut');
+        if (signOutButton && DB.supabase) {
+            signOutButton.classList.remove('hidden');
+            signOutButton.addEventListener('click', async () => {
+                signOutButton.disabled = true;
+                try {
+                    await DB.signOut();
+                    window.location.reload();
+                } catch (error) {
+                    signOutButton.disabled = false;
+                    Utils.showToast(this.authErrorMessage(error), 'error');
+                }
+            });
+        }
 
         // Modal close buttons
         document.querySelectorAll('[data-close]').forEach(btn => {

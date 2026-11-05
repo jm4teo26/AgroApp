@@ -4,7 +4,7 @@
    Compatible con GitHub Pages (subdirectorio)
    ======================================== */
 
-const CACHE_NAME = 'agroapp-v13-cert';
+const CACHE_NAME = 'agroapp-v14-supabase';
 
 // Detectar la base path automáticamente
 const BASE_PATH = self.registration.scope;
